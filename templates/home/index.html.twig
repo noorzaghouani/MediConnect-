@@ -1,0 +1,151 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MediConnect - Plateforme de Téléconsultation{% endblock %}
+
+{% block body %}
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">MediConnect</div>
+            <div class="nav-right">
+                <a href="#accueil" class="nav-link-simple">Accueil</a>
+                <a href="#services" class="nav-link-simple">Services</a>
+                <a href="#comment-ca-marche" class="nav-link-simple">Comment ça marche</a>
+                <a href="{{ path('app_register') }}" class="nav-btn">Inscription</a>
+                <a href="{{ path('app_login') }}" class="nav-btn-outline">Connexion</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Section Hero -->
+    <div class="section-with-bg" id="accueil">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1>Votre Santé, Notre Priorité</h1>
+            <p class="hero-subtitle">Consultez un médecin qualifié en quelques minutes, où que vous soyez.</p>
+            <div class="hero-buttons">
+                <a href="{{ path('app_register') }}" class="btn-primary-lg">Commencer maintenant</a>
+                <a href="#comment-ca-marche" class="btn-secondary-lg">En savoir plus</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section Services -->
+    <section class="services-section" id="services">
+        <div class="container">
+            <h2 class="section-title">Nos Services</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h3>Téléconsultation</h3>
+                    <p>Consultez des médecins généralistes et spécialistes en vidéo, 7j/7.</p>
+                </div>
+                <div class="service-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-file-prescription"></i>
+                    </div>
+                    <h3>Ordonnance en ligne</h3>
+                    <p>Recevez votre ordonnance digitale sécurisée directement après la consultation.</p>
+                </div>
+                <div class="service-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-notes-medical"></i>
+                    </div>
+                    <h3>Suivi Médical</h3>
+                    <p>Un dossier médical complet et sécurisé pour un suivi optimal de votre santé.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section À Propos -->
+    <section class="about-section">
+        <div class="about-container">
+            <div class="about-image">
+                <img src="{{ asset('images/aprops.jpg') }}" alt="Équipe médicale">
+            </div>
+            
+            <div class="about-content">
+                <h2>Pourquoi nous choisir ?</h2>
+                <p><strong>MediConnect</strong> révolutionne l'accès aux soins. Fini les salles d'attente bondées : accédez à une expertise médicale de qualité depuis chez vous.</p>
+                
+                <div class="features-list">
+                    <div class="feature-item">
+                        <div class="check-icon"><i class="fas fa-check"></i></div>
+                        <span>Médecins certifiés et expérimentés</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="check-icon"><i class="fas fa-check"></i></div>
+                        <span>Sécurité et confidentialité des données</span>
+                    </div>
+                    <div class="feature-item">
+                        <div class="check-icon"><i class="fas fa-check"></i></div>
+                        <span>Disponible 24h/24 et 7j/7</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="decorative-circle"></div>
+        </div>
+    </section>
+
+    <!-- Section Comment ça marche -->
+    <section class="how-it-works" id="comment-ca-marche">
+        <div class="container">
+            <h2 class="section-title">Comment ça marche ?</h2>
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <h3>Inscrivez-vous</h3>
+                    <p>Créez votre compte patient gratuitement en quelques clics.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <h3>Choisissez un médecin</h3>
+                    <p>Sélectionnez le praticien qui correspond à vos besoins.</p>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <h3>Consultez</h3>
+                    <p>Échangez en vidéo et recevez vos documents médicaux.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-help">
+            <h2>Une question ?</h2>
+            <p>Notre équipe support est là pour vous accompagner.</p>
+            <a href="#contact" class="footer-btn">Contactez-nous</a>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="logo">
+                        <div class="footer-logo">MediConnect</div>
+                    </div>
+                    <p class="footer-desc">Votre partenaire santé de confiance pour des consultations médicales en ligne simples et sécurisées.</p>
+                </div>
+                <div class="footer-apps">
+                    <a href="#" class="app-btn app-store">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store">
+                    </a>
+                    <a href="#" class="app-btn google-play">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play">
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-author">
+            <div class="footer-logo">Réalisé par :
+                <p>Nour ZAGHOUANI • Eya WANES • Aziz YAKHOUBI</p>
+            </div>
+        </div>
+    </footer>
+{% endblock %}
