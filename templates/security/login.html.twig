@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MediConnect - Connexion{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/login/login.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="logo">
+            MediConnect
+        </div>
+
+        <div class="welcome-section">
+            <h1>Bienvenue</h1>
+            <p class="subtitle">Connectez-vous pour accéder à votre espace de téléconsultation</p>
+        </div>
+
+        {% if error %}
+            <div class="alert alert-danger">
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_login') }}" class="login-form">
+            <div class="form-group">
+                <label for="email">Adresse email</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    value="{{ last_username }}"
+                    placeholder="Entrez votre adresse email" 
+                    required 
+                    autofocus
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <div class="password-input">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="_password"
+                        placeholder="••••••••" 
+                        required
+                    >
+                    <button type="button" class="toggle-password">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+
+            <button type="submit" class="login-btn">Se connecter</button>
+
+            <p class="signup-text">
+                Vous n'avez pas de compte ? <a href="{{ path('app_register') }}" class="signup-link">S'inscrire</a>
+            </p>
+
+        </form>
+    </div>
+
+    <div class="image-section">
+        <img src="{{ asset('images/log.png') }}" alt="Consultation médicale">
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/login/login.js') }}"></script>
+{% endblock %}

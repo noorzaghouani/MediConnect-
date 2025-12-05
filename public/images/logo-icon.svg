@@ -1,0 +1,25 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- White rounded background -->
+    <rect width="40" height="40" rx="8" fill="white"/>
+    
+    <!-- Medical caduceus icon in teal -->
+    <g transform="translate(10, 8)">
+        <!-- Staff -->
+        <rect x="9" y="2" width="2" height="22" fill="#0d9488"/>
+        
+        <!-- Wings -->
+        <path d="M5 8 Q3 8, 3 10 Q3 12, 5 12 L8 10 L5 8Z" fill="#0d9488"/>
+        <path d="M15 8 Q17 8, 17 10 Q17 12, 15 12 L12 10 L15 8Z" fill="#0d9488"/>
+        
+        <!-- Snakes -->
+        <path d="M7 6 Q6 8, 7 10 Q8 12, 9 14" stroke="#0d9488" stroke-width="1.5" fill="none"/>
+        <path d="M13 6 Q14 8, 13 10 Q12 12, 11 14" stroke="#0d9488" stroke-width="1.5" fill="none"/>
+        
+        <!-- Top circle -->
+        <circle cx="10" cy="3" r="2" fill="#0d9488"/>
+        
+        <!-- Medical cross alternative -->
+        <rect x="8.5" y="10" width="3" height="8" rx="0.5" fill="#0d9488"/>
+        <rect x="6" y="12.5" width="8" height="3" rx="0.5" fill="#0d9488"/>
+    </g>
+</svg>

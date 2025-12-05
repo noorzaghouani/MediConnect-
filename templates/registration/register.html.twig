@@ -1,0 +1,158 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}MediConnect - Inscription{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/register/register.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="register-container">
+    <div class="register-card">
+        <div class="logo">
+            MediConnect
+        </div>
+
+        <div class="welcome-section">
+            <h1>Créer votre compte</h1>
+            <p class="subtitle">Rejoignez notre plateforme de téléconsultation médicale</p>
+        </div>
+
+        {{ form_start(registrationForm, {'attr': {'class': 'register-form'}}) }}
+            <!-- Type de compte -->
+            <div class="form-group full-width">
+                {{ form_label(registrationForm.role) }}
+                <div class="role-group">
+                    {% for child in registrationForm.role %}
+                        <div class="role-option">
+                            {{ form_widget(child, {'attr': {'onchange': 'toggleDiplomeField()'}}) }}
+                            {{ form_label(child, null, {'label_attr': {'class': 'role-label'}}) }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {{ form_errors(registrationForm.role) }}
+            </div>
+
+            <!-- Champ diplôme (visible seulement pour médecin) -->
+            <div class="form-group full-width" id="diplome-section" style="display: none;">
+                {{ form_label(registrationForm.diplome) }}
+                <div class="file-upload-wrapper">
+                    {{ form_widget(registrationForm.diplome, {'attr': {'onchange': 'updateFileName(this)', 'id': 'diplome'}}) }}
+                    <label for="registration_form_diplome" class="file-upload-label">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                        <span class="file-text">Choisir un fichier</span>
+                    </label>
+                    <div class="file-name" id="file-name"></div>
+                </div>
+                <p style="color: #94a3b8; font-size: 12px; margin-top: 6px;">Formats acceptés : PDF, JPG, PNG (max 5 Mo)</p>
+                {{ form_errors(registrationForm.diplome) }}
+            </div>
+
+            <!-- Champ spécialité (visible seulement pour médecin) -->
+            <div class="form-group full-width" id="specialite-section" style="display: none;">
+                {{ form_label(registrationForm.specialite) }}
+                {{ form_widget(registrationForm.specialite) }}
+                {{ form_errors(registrationForm.specialite) }}
+            </div>
+
+            <!-- Genre -->
+            <div class="form-group full-width">
+                {{ form_label(registrationForm.genre) }}
+                <div class="radio-group">
+                    {% for child in registrationForm.genre %}
+                        <div class="radio-option">
+                            {{ form_widget(child) }}
+                            {{ form_label(child) }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {{ form_errors(registrationForm.genre) }}
+            </div>
+
+            <!-- Nom et Prénom -->
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(registrationForm.nom) }}
+                    {{ form_widget(registrationForm.nom) }}
+                    {{ form_errors(registrationForm.nom) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(registrationForm.prenom) }}
+                    {{ form_widget(registrationForm.prenom) }}
+                    {{ form_errors(registrationForm.prenom) }}
+                </div>
+            </div>
+
+            <!-- Téléphone et Date de naissance -->
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(registrationForm.telephone) }}
+                    {{ form_widget(registrationForm.telephone) }}
+                    {{ form_errors(registrationForm.telephone) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(registrationForm.date_naissance) }}
+                    {{ form_widget(registrationForm.date_naissance) }}
+                    {{ form_errors(registrationForm.date_naissance) }}
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                {{ form_label(registrationForm.email) }}
+                {{ form_widget(registrationForm.email) }}
+                {{ form_errors(registrationForm.email) }}
+            </div>
+
+            <!-- Mot de passe et Confirmation -->
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(registrationForm.password) }}
+                    <div class="password-input">
+                        {{ form_widget(registrationForm.password) }}
+                        <button type="button" class="toggle-password" onclick="togglePassword('registration_form_password')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                    {{ form_errors(registrationForm.password) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(registrationForm.confirm_password) }}
+                    <div class="password-input">
+                        {{ form_widget(registrationForm.confirm_password) }}
+                        <button type="button" class="toggle-password" onclick="togglePassword('registration_form_confirm_password')">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="register-btn">Créer mon compte</button>
+
+            <p class="login-text">
+                Vous avez déjà un compte ? <a href="{{ path('app_login') }}" class="login-link">Se connecter</a>
+            </p>
+        {{ form_end(registrationForm) }}
+    </div>
+
+    <div class="image-section">
+        <img src="{{ asset('images/inscri.jpg') }}" alt="Inscription MediConnect">
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/register/register.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Médecin - MediConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/medecin/medecin_dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/medecin/modal.css') }}?v=2">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo-section">
+            <div class="logo-icon">
+                ⚕️
+            </div>
+            <div class="logo-text">MediConnect</div>
+        </div>
+
+        <div class="doctor-profile">
+            <div class="doctor-avatar">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <div class="doctor-name">Dr. {{ app.user.prenom }} {{ app.user.nom }}</div>
+            <div class="doctor-specialty">{{ app.user.specialite|default('Médecin généraliste') }}</div>
+        </div>
+
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Mes Rendez-vous</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" id="availabilityMenuBtn">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Mes Disponibilités</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span>Mes Patients</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-file-prescription"></i>
+                        <span>Ordonnances</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Bienvenue dans l'espace Médecin</h1>
+            </div>
+            <div class="header-right">
+                <button class="header-btn btn-primary" id="editProfileBtn">
+                    <i class="fas fa-user-edit"></i>
+                    Éditer Profil
+                </button>
+                <a href="{{ path('app_logout') }}" class="header-btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        <!-- Rendez-vous Section -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="fas fa-calendar-day"></i>
+                    Rendez-vous
+                </h2>
+            </div>
+
+            <div class="appointments-list">
+                <!-- Appointment 1 -->
+                <div class="appointment-item">
+                    <div class="appointment-header">
+                        <div class="patient-info">
+                            <h4>M. Karim Mansouri</h4>
+                            <p><i class="fas fa-phone"></i> 0623456789 • Première consultation</p>
+                        </div>
+                        <div class="appointment-time">
+                            <i class="fas fa-clock"></i> 10:30
+                        </div>
+                    </div>
+                    <div class="appointment-actions">
+                        <button class="action-btn btn-confirm">
+                            <i class="fas fa-check"></i> Confirmer
+                        </button>
+                        <button class="action-btn btn-view">
+                            <i class="fas fa-folder-open"></i> Voir Dossier
+                        </button>
+                        <button class="action-btn btn-consult">
+                            <i class="fas fa-stethoscope"></i> Consulter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Appointment 2 -->
+                <div class="appointment-item">
+                    <div class="appointment-header">
+                        <div class="patient-info">
+                            <h4>Mme. Amina Tazi</h4>
+                            <p><i class="fas fa-phone"></i> 0634567890 • Contrôle post-opératoire</p>
+                        </div>
+                        <div class="appointment-time">
+                            <i class="fas fa-clock"></i> 14:00
+                        </div>
+                    </div>
+                    <div class="appointment-actions">
+                        <button class="action-btn btn-confirm">
+                            <i class="fas fa-check"></i> Confirmer
+                        </button>
+                        <button class="action-btn btn-view">
+                            <i class="fas fa-folder-open"></i> Voir Dossier
+                        </button>
+                        <button class="action-btn btn-consult">
+                            <i class="fas fa-stethoscope"></i> Consulter
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Appointment 3 -->
+                <div class="appointment-item">
+                    <div class="appointment-header">
+                        <div class="patient-info">
+                            <h4>M. Youssef Alami</h4>
+                            <p><i class="fas fa-phone"></i> 0645678901 • Suivi régulier</p>
+                        </div>
+                        <div class="appointment-time">
+                            <i class="fas fa-clock"></i> 16:30
+                        </div>
+                    </div>
+                    <div class="appointment-actions">
+                        <button class="action-btn btn-confirm">
+                            <i class="fas fa-check"></i> Confirmer
+                        </button>
+                        <button class="action-btn btn-view">
+                            <i class="fas fa-folder-open"></i> Voir Dossier
+                        </button>
+                        <button class="action-btn btn-consult">
+                            <i class="fas fa-stethoscope"></i> Consulter
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Edit Profile -->
+    <div id="editProfileModal" class="modal-overlay">
+        <div class="modal-container">
+            <!-- Modal Header (Teal with Avatar) -->
+            <div class="modal-header-teal">
+                <div class="modal-header-content">
+                    <div class="modal-avatar">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <h2 class="modal-title-white">Éditer Profil & Sécurité</h2>
+                </div>
+                <button class="modal-close-white" id="closeModalBtn" type="button">&times;</button>
+            </div>
+
+            <div class="modal-body-white">
+                <form action="{{ path('app_medecin_edit_profile') }}" method="POST">
+                    
+                    <!-- Section: Informations Personnelles -->
+                    <div class="section-header-teal">
+                        <i class="fas fa-user"></i>
+                        <span>Informations Personnelles</span>
+                    </div>
+
+                    <div class="form-fields-gray">
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Nom</label>
+                            <input type="text" name="nom" class="field-input-right" value="{{ app.user.nom }}" placeholder="">
+                        </div>
+
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Prénom</label>
+                            <input type="text" name="prenom" class="field-input-right" value="{{ app.user.prenom }}" placeholder="">
+                        </div>
+
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Spécialité</label>
+                            <select name="specialite" class="field-input-right">
+                                <option value="">Sélectionnez votre spécialité</option>
+                                <option value="Cardiologue" {% if app.user.specialite == 'Cardiologue' %}selected{% endif %}>Cardiologue</option>
+                                <option value="Pédiatre" {% if app.user.specialite == 'Pédiatre' %}selected{% endif %}>Pédiatre</option>
+                                <option value="Dermatologue" {% if app.user.specialite == 'Dermatologue' %}selected{% endif %}>Dermatologue</option>
+                                <option value="Généraliste" {% if app.user.specialite == 'Généraliste' %}selected{% endif %}>Généraliste</option>
+                                <option value="Ophtalmologue" {% if app.user.specialite == 'Ophtalmologue' %}selected{% endif %}>Ophtalmologue</option>
+                                <option value="Dentiste" {% if app.user.specialite == 'Dentiste' %}selected{% endif %}>Dentiste</option>
+                            </select>
+                        </div>
+
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Téléphone</label>
+                            <input type="tel" name="telephone" class="field-input-right" value="{{ app.user.telephone }}" placeholder="">
+                        </div>
+                    </div>
+
+                    <!-- Section: Changer Mot de Passe -->
+                    <div class="section-header-teal" style="margin-top: 25px;">
+                        <i class="fas fa-key"></i>
+                        <span>Changer Mot de Passe</span>
+                    </div>
+
+                    <div class="form-fields-gray">
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Mot de passe actuel</label>
+                            <input type="password" name="current_password" class="field-input-right" placeholder="••••••••">
+                        </div>
+
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Nouveau mot de passe</label>
+                            <input type="password" name="new_password" class="field-input-right" placeholder="••••••••">
+                        </div>
+
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Confirmer le mot de passe</label>
+                            <input type="password" name="confirm_password" class="field-input-right" placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="modal-buttons">
+                        <button type="submit" class="btn-save-teal">
+                            <i class="fas fa-save"></i> Enregistrer Tout
+                        </button>
+                        <button type="button" class="btn-cancel-gray" id="cancelModalBtn">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Gérer Disponibilités -->
+    <div id="availabilityModal" class="modal-overlay">
+        <div class="modal-container">
+            <!-- Modal Header -->
+            <div class="modal-header-teal">
+                <div class="modal-header-content">
+                    <div class="modal-avatar">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h2 class="modal-title-white">Gérer Mes Disponibilités</h2>
+                </div>
+                <button class="modal-close-white" id="closeAvailabilityBtn" type="button">&times;</button>
+            </div>
+
+            <div class="modal-body-white">
+                <form id="availabilityForm">
+                    <div class="form-group-vertical">
+                        <label>Sélectionner la date</label>
+                        <input type="date" id="availability_date" name="date" class="field-input-full" min="{{ "now"|date("Y-m-d") }}" required>
+                    </div>
+
+                    <div class="availability-hours-row">
+                        <div class="form-group-vertical">
+                            <label>Heure de début</label>
+                            <input type="time" id="availability_heure_debut" name="heure_debut" class="field-input-full" value="09:00" required>
+                        </div>
+
+                        <div class="form-group-vertical">
+                            <label>Heure de fin</label>
+                            <input type="time" id="availability_heure_fin" name="heure_fin" class="field-input-full" value="17:00" required>
+                        </div>
+                    </div>
+
+                    <div class="modal-buttons">
+                        <button type="submit" class="btn-save-teal">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                        <button type="button" class="btn-cancel-gray" id="cancelAvailabilityBtn">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Liste des disponibilités -->
+                <div id="availabilityList" class="availability-list" style="margin-top: 30px;">
+                    <h3 style="color: #0d9488; font-size: 16px; margin-bottom: 15px;">
+                        <i class="fas fa-list"></i> Mes disponibilités enregistrées
+                    </h3>
+                    <div id="availabilityItems"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ asset('js/medecin/dashboard.js') }}"></script>
+</body>
+</html>

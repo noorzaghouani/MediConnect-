@@ -1,0 +1,369 @@
+/* ===================================
+   RESET & VARIABLES
+   =================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    color: #2d3748;
+    overflow-x: hidden;
+}
+
+/* ===================================
+   SIDEBAR
+   =================================== */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 280px;
+    background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%);
+    padding: 20px;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 10px;
+    margin-bottom: 30px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #0d9488;
+}
+
+.logo-text {
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.doctor-profile {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.doctor-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #0d9488;
+    border: 4px solid white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.doctor-name {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.doctor-specialty {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+.nav-menu {
+    list-style: none;
+}
+
+.nav-item {
+    margin-bottom: 8px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: translateX(5px);
+}
+
+.nav-link i {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+}
+
+/* ===================================
+   MAIN CONTENT
+   =================================== */
+.main-content {
+    margin-left: 280px;
+    padding: 30px;
+    min-height: 100vh;
+}
+
+/* ===================================
+   HEADER
+   =================================== */
+.header {
+    background: white;
+    padding: 25px 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-left h1 {
+    font-size: 28px;
+    color: #0d9488;
+    margin-bottom: 5px;
+}
+
+.header-left p {
+    color: #718096;
+    font-size: 14px;
+}
+
+.header-right {
+    display: flex;
+    gap: 15px;
+}
+
+.header-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+/* ===================================
+   PANEL STYLING
+   =================================== */
+.panel {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    max-width: 100%;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f7fafc;
+}
+
+.panel-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #2d3748;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.panel-title i {
+    color: #0d9488;
+}
+
+/* ===================================
+   APPOINTMENTS LIST
+   =================================== */
+.appointment-item {
+    padding: 18px;
+    border-left: 4px solid #0d9488;
+    background: #f7fafc;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.appointment-item:hover {
+    background: #edf2f7;
+    transform: translateX(5px);
+}
+
+.appointment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.patient-info h4 {
+    font-size: 16px;
+    color: #2d3748;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.patient-info p {
+    font-size: 13px;
+    color: #718096;
+}
+
+.appointment-time {
+    background: #0d9488;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.appointment-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-confirm {
+    background: #10b981;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background: #059669;
+    transform: scale(1.05);
+}
+
+.btn-view {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #2563eb;
+    transform: scale(1.05);
+}
+
+.btn-consult {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-consult:hover {
+    background: #d97706;
+    transform: scale(1.05);
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .header-right {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .header-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .appointment-actions {
+        flex-direction: column;
+    }
+
+    .action-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Admin - MediConnect{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mt-4 mb-4">Dashboard Administrateur</h1>
+            <p class="lead">Page en construction - MediConnect</p>
+            
+            <div class="alert alert-info">
+                <strong>Bienvenue Admin!</strong> Vous êtes connecté en tant qu'administrateur.
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Utilisateurs</h5>
+                            <p class="card-text">Gérer les utilisateurs de la plateforme</p>
+                            <a href="#" class="btn btn-primary">Voir</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Médecins</h5>
+                            <p class="card-text">Gérer les médecins et leurs spécialités</p>
+                            <a href="#" class="btn btn-primary">Voir</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Consultations</h5>
+                            <p class="card-text">Surveiller les consultations</p>
+                            <a href="#" class="btn btn-primary">Voir</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <a href="{{ path('app_logout') }}" class="btn btn-danger">Se déconnecter</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
