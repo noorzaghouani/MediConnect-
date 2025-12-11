@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Repository\MedecinRepository;
@@ -16,9 +16,12 @@ class PatientController extends AbstractController
 {
     #[Route('/patient/dashboard', name: 'app_patient_dashboard')]
     #[IsGranted('ROLE_PATIENT')]
-    public function dashboard(): Response
+    public function dashboard(EntityManagerInterface $em): Response
     {
-        return $this->render('patient/dashboard.html.twig');
+        $specialities = $em->getRepository(\App\Entity\Speciality::class)->findAll();
+        return $this->render('patient/dashboard.html.twig', [
+            'specialities' => $specialities
+        ]);
     }
 
     #[Route('/patient/search-medecin', name: 'app_patient_search_medecin', methods: ['GET'])]
@@ -37,7 +40,7 @@ class PatientController extends AbstractController
                 'id' => $medecin->getId(),
                 'nom' => $medecin->getNom(),
                 'prenom' => $medecin->getPrenom(),
-                'specialite' => $medecin->getSpecialite() ?? 'Non spécifiée',
+                'specialite' => $medecin->getSpecialite()?->getNom() ?? 'Non spécifiée',
                 'telephone' => $medecin->getTelephone() ?? '',
                 'email' => $medecin->getEmail(),
             ];

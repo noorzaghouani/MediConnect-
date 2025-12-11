@@ -212,12 +212,9 @@
                             <label class="field-label-left">Spécialité</label>
                             <select name="specialite" class="field-input-right">
                                 <option value="">Sélectionnez votre spécialité</option>
-                                <option value="Cardiologue" {% if app.user.specialite == 'Cardiologue' %}selected{% endif %}>Cardiologue</option>
-                                <option value="Pédiatre" {% if app.user.specialite == 'Pédiatre' %}selected{% endif %}>Pédiatre</option>
-                                <option value="Dermatologue" {% if app.user.specialite == 'Dermatologue' %}selected{% endif %}>Dermatologue</option>
-                                <option value="Généraliste" {% if app.user.specialite == 'Généraliste' %}selected{% endif %}>Généraliste</option>
-                                <option value="Ophtalmologue" {% if app.user.specialite == 'Ophtalmologue' %}selected{% endif %}>Ophtalmologue</option>
-                                <option value="Dentiste" {% if app.user.specialite == 'Dentiste' %}selected{% endif %}>Dentiste</option>
+                                {% for speciality in specialities %}
+                                    <option value="{{ speciality.id }}" {% if app.user.specialite and app.user.specialite.id == speciality.id %}selected{% endif %}>{{ speciality.nom }}</option>
+                                {% endfor %}
                             </select>
                         </div>
 

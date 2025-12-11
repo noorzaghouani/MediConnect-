@@ -126,12 +126,9 @@
                         <label>Spécialité</label>
                         <select id="searchSpecialite" class="form-select">
                             <option value="">Toutes les spécialités</option>
-                            <option value="Cardiologue">Cardiologue</option>
-                            <option value="Généraliste">Généraliste</option>
-                            <option value="Pédiatre">Pédiatre</option>
-                            <option value="Dermatologue">Dermatologue</option>
-                            <option value="Ophtalmologue">Ophtalmologue</option>
-                            <option value="Dentiste">Dentiste</option>
+                            {% for speciality in specialities %}
+                                <option value="{{ speciality.nom }}">{{ speciality.nom }}</option>
+                            {% endfor %}
                         </select>
                     </div>
 
