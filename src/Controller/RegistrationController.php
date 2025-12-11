@@ -29,9 +29,10 @@ class RegistrationController extends AbstractController
             // Créer l'utilisateur selon le type
             if ($data['role'] === 'medecin') {
                 $user = new Medecin();
+
                 // Gérer l'upload du diplôme ici
-                if (isset($data['diplome']) && $data['diplome']) {
-                    $diplomeFile = $data['diplome'];
+                $diplomeFile = $form->get('diplome')->getData();
+                if ($diplomeFile) {
                     $fileName = uniqid() . '.' . $diplomeFile->guessExtension();
                     $diplomeFile->move(
                         $this->getParameter('diplomes_directory'),
@@ -39,9 +40,11 @@ class RegistrationController extends AbstractController
                     );
                     $user->setDiplome($fileName);
                 }
+
                 // Gérer la spécialité
-                if (isset($data['specialite']) && $data['specialite']) {
-                    $user->setSpecialite($data['specialite']);
+                $specialite = $form->get('specialite')->getData();
+                if ($specialite) {
+                    $user->setSpecialite($specialite);
                 }
             } else {
                 $user = new Patient();

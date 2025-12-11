@@ -4,6 +4,8 @@ namespace App\Form;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Entity\Speciality;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -45,29 +47,12 @@ class RegistrationFormType extends AbstractType
             ])
 
             // Spécialité (conditionnel pour médecin)
-            ->add('specialite', ChoiceType::class, [
+            ->add('specialite', EntityType::class, [
+                'class' => Speciality::class,
+                'choice_label' => 'nom',
                 'label' => 'Spécialité médicale *',
                 'required' => false,
                 'mapped' => false,
-                'choices' => [
-                    'Médecine Générale' => 'medecine_generale',
-                    'Cardiologie' => 'cardiologie',
-                    'Dermatologie' => 'dermatologie',
-                    'Pédiatrie' => 'pediatrie',
-                    'Gynécologie' => 'gynecologie',
-                    'Ophtalmologie' => 'ophtalmologie',
-                    'ORL' => 'orl',
-                    'Orthopédie' => 'orthopedie',
-                    'Psychiatrie' => 'psychiatrie',
-                    'Radiologie' => 'radiologie',
-                    'Neurologie' => 'neurologie',
-                    'Endocrinologie' => 'endocrinologie',
-                    'Gastro-entérologie' => 'gastro_enterologie',
-                    'Pneumologie' => 'pneumologie',
-                    'Rhumatologie' => 'rhumatologie',
-                    'Urologie' => 'urologie',
-                    'Autre' => 'autre',
-                ],
                 'placeholder' => 'Sélectionnez votre spécialité',
             ])
 

@@ -7,22 +7,25 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\Disponibilite;
+use App\Entity\Speciality;
 
 class MedecinController extends AbstractController
 {
     #[Route('/medecin/dashboard', name: 'app_medecin_dashboard')]
     #[IsGranted('ROLE_MEDECIN')]
-    public function dashboard(): Response
+    public function dashboard(EntityManagerInterface $em): Response
     {
         // Récupérer l'utilisateur connecté (qui est un Medecin)
         $medecin = $this->getUser();
+        $specialities = $em->getRepository(Speciality::class)->findAll();
 
         return $this->render('medecin/dashboard.html.twig', [
             'medecin' => $medecin,
+            'specialities' => $specialities,
         ]);
     }
 
@@ -42,12 +45,14 @@ class MedecinController extends AbstractController
 
     #[Route('/medecin/profil', name: 'app_medecin_profil')]
     #[IsGranted('ROLE_MEDECIN')]
-    public function profil(): Response
+    public function profil(EntityManagerInterface $em): Response
     {
         $medecin = $this->getUser();
+        $specialities = $em->getRepository(Speciality::class)->findAll();
 
         return $this->render('medecin/profil.html.twig', [
             'medecin' => $medecin,
+            'specialities' => $specialities,
         ]);
     }
 
@@ -68,7 +73,10 @@ class MedecinController extends AbstractController
             $medecin->setPrenom($data['prenom']);
         }
         if (isset($data['specialite']) && !empty($data['specialite'])) {
-            $medecin->setSpecialite($data['specialite']);
+            $speciality = $entityManager->getRepository(Speciality::class)->find($data['specialite']);
+            if ($speciality) {
+                $medecin->setSpecialite($speciality);
+            }
         }
         if (isset($data['email']) && !empty($data['email'])) {
             $medecin->setEmail($data['email']);

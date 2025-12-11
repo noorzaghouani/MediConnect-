@@ -40,7 +40,8 @@ class MedecinRepository extends ServiceEntityRepository
         }
 
         if ($specialite && !empty(trim($specialite))) {
-            $qb->andWhere('LOWER(m.specialite) LIKE LOWER(:specialite)')
+            $qb->leftJoin('m.specialite', 's')
+                ->andWhere('LOWER(s.nom) LIKE LOWER(:specialite)')
                 ->setParameter('specialite', '%' . trim($specialite) . '%');
         }
 
