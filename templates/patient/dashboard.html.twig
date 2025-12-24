@@ -53,18 +53,6 @@
                         <span>Mes Ordonnances</span>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-file-invoice"></i>
-                        <span>Mes Factures</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-video"></i>
-                        <span>Téléconsultation</span>
-                    </a>
-                </li>
             </ul>
         </nav>
     </aside>
@@ -150,6 +138,23 @@
                     <!-- Results will be inserted here dynamically -->
                 </div>
             </div>
+
+            {% if lastDoctor %}
+                <div class="suggestion-box" style="margin-top: 20px; background: #f0fdf9; border: 1px solid #ccfbf1; padding: 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <div style="background: #0d9488; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; color: #0f172a;">Reprendre rendez-vous ?</h4>
+                            <p style="margin: 0; color: #64748b; font-size: 0.9em;">Dr. {{ lastDoctor.prenom }} {{ lastDoctor.nom }} ({{ lastDoctor.specialite.nom }})</p>
+                        </div>
+                    </div>
+                    <button class="btn-search" onclick="showAvailabilityModal({{ lastDoctor.id }}, 'Dr. {{ lastDoctor.prenom }} {{ lastDoctor.nom }}')" style="width: auto; padding: 8px 15px;">
+                        <i class="fas fa-calendar-plus"></i> Réserver
+                    </button>
+                </div>
+            {% endif %}
         </div>
 
         <!-- Appointments Section -->
@@ -162,65 +167,53 @@
             </div>
 
             <div class="appointments-list">
-                <!-- Appointment 1 -->
-                <div class="appointment-card">
-                    <div class="appointment-header">
-                        <div class="doctor-info">
-                            <h3>Dr. Ahmed Benali</h3>
-                            <p class="specialty">
-                                <i class="fas fa-stethoscope"></i>
-                                Cardiologue • Cabinet Rabat
-                            </p>
-                            <p class="appointment-datetime">
-                                <i class="fas fa-calendar"></i>
-                                8 décembre 2025 à 14:00
-                            </p>
-                        </div>
-                        <div class="appointment-status">
-                            <span class="status-badge confirmed">Confirmé</span>
-                        </div>
+                {% if appointments is empty %}
+                    <div class="no-appointments">
+                        <i class="fas fa-calendar-check" style="font-size: 2rem; color: #cbd5e1;"></i>
+                        <p style="color: #64748b; margin-top: 10px;">Aucun rendez-vous prévu.</p>
                     </div>
-                    <div class="appointment-actions">
-                        <button class="action-btn btn-details">
-                            <i class="fas fa-info-circle"></i>
-                            Détails
-                        </button>
-                        <button class="action-btn btn-cancel">
-                            <i class="fas fa-times"></i>
-                            Annuler
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Appointment 2 -->
-                <div class="appointment-card">
-                    <div class="appointment-header">
-                        <div class="doctor-info">
-                            <h3>Dr. Fatima Zahrae</h3>
-                            <p class="specialty">
-                                <i class="fas fa-stethoscope"></i>
-                                Généraliste • Cabinet Casablanca
-                            </p>
-                            <p class="appointment-datetime">
-                                <i class="fas fa-calendar"></i>
-                                9 décembre 2025 à 15:30
-                            </p>
+                {% else %}
+                    {% for rdv in appointments %}
+                        <div class="appointment-card">
+                            <div class="appointment-header">
+                                <div class="doctor-info">
+                                    <h3>Dr. {{ rdv.medecin.prenom }} {{ rdv.medecin.nom }}</h3>
+                                    <p class="specialty">
+                                        <i class="fas fa-stethoscope"></i>
+                                        {{ rdv.medecin.specialite ? rdv.medecin.specialite.nom : 'Médecin' }}
+                                    </p>
+                                    <p class="appointment-datetime">
+                                        <i class="fas fa-calendar"></i>
+                                        {{ rdv.dateHeure|date('d/m/Y à H:i') }}
+                                    </p>
+                                </div>
+                                <div class="appointment-status">
+                                    {% if rdv.statut == 'confirme' %}
+                                        <span class="status-badge confirmed">Confirmé</span>
+                                    {% elseif rdv.statut == 'en_attente' %}
+                                        <span class="status-badge pending">En Attente</span>
+                                    {% elseif rdv.statut == 'annule' %}
+                                        <span class="status-badge cancelled" style="background: #fee2e2; color: #dc2626;">Annulé</span>
+                                    {% else %}
+                                        <span class="status-badge">{{ rdv.statut }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="action-btn btn-details" onclick="alert('Détails bientôt disponibles')">
+                                    <i class="fas fa-info-circle"></i>
+                                    Détails
+                                </button>
+                                {% if rdv.statut != 'annule' and rdv.statut != 'termine' %}
+                                    <button class="action-btn btn-cancel" data-id="{{ rdv.id }}">
+                                        <i class="fas fa-times"></i>
+                                        Annuler
+                                    </button>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="appointment-status">
-                            <span class="status-badge pending">En Attente</span>
-                        </div>
-                    </div>
-                    <div class="appointment-actions">
-                        <button class="action-btn btn-details">
-                            <i class="fas fa-info-circle"></i>
-                            Détails
-                        </button>
-                        <button class="action-btn btn-cancel">
-                            <i class="fas fa-times"></i>
-                            Annuler
-                        </button>
-                    </div>
-                </div>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
     </main>

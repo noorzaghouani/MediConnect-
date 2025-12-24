@@ -1,5 +1,4 @@
 <?php
-// src/Repository/OrdonnanceRepository.php
 
 namespace App\Repository;
 
@@ -9,29 +8,16 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Ordonnance>
+ *
+ * @method Ordonnance|null find($id, $lockMode = null, $lockVersion = null)
+ * @method Ordonnance|null findOneBy(array $criteria, array $orderBy = null)
+ * @method Ordonnance[]    findAll()
+ * @method Ordonnance[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class OrdonnanceRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Ordonnance::class);
-    }
-
-    public function save(Ordonnance $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->persist($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
-    }
-
-    public function remove(Ordonnance $entity, bool $flush = false): void
-    {
-        $this->getEntityManager()->remove($entity);
-
-        if ($flush) {
-            $this->getEntityManager()->flush();
-        }
     }
 }

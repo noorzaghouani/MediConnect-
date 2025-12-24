@@ -1,8 +1,8 @@
 <?php
-// src/Entity/Consultation.php
 
 namespace App\Entity;
 
+use App\Repository\ConsultationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConsultationRepository::class)]
@@ -10,54 +10,44 @@ class Consultation
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\OneToOne(targetEntity: RendezVous::class, inversedBy: 'consultation')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?RendezVous $rendezVous = null;
-
-    #[ORM\ManyToOne(targetEntity: DossierMedical::class, inversedBy: 'consultations')]
+    #[ORM\ManyToOne(inversedBy: 'consultations', targetEntity: DossierMedical::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ?DossierMedical $dossierMedical = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $notes = null;
+    #[ORM\ManyToOne(inversedBy: 'consultations', targetEntity: Medecin::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Medecin $medecin = null;
 
-    #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    private ?string $diagnostic = null;
+    #[ORM\OneToOne(inversedBy: 'consultation', targetEntity: RendezVous::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?RendezVous $rendezVous = null;
 
     #[ORM\Column(type: 'datetime')]
-    private ?\DateTimeInterface $dateConsultation = null;
+    private ?\DateTimeInterface $date = null;
 
-    #[ORM\OneToOne(targetEntity: Ordonnance::class, mappedBy: 'consultation')]
-    private ?Ordonnance $ordonnance = null;
+    #[ORM\Column(type: 'text')]
+    private ?string $motif = null;
 
-    #[ORM\Column(type: 'integer')]
-    private int $duree = 30; // Durée en minutes
+    #[ORM\Column(type: 'text')]
+    private ?string $diagnostic = null;
 
-    #[ORM\Column(type: 'string', length: 20)]
-    private string $type = 'visioconference';
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $traitement = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $observations = null;
 
     public function __construct()
     {
-        $this->dateConsultation = new \DateTime();
+        $this->date = new \DateTime();
     }
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getRendezVous(): ?RendezVous
-    {
-        return $this->rendezVous;
-    }
-
-    public function setRendezVous(?RendezVous $rendezVous): self
-    {
-        $this->rendezVous = $rendezVous;
-        return $this;
     }
 
     public function getDossierMedical(): ?DossierMedical
@@ -71,14 +61,47 @@ class Consultation
         return $this;
     }
 
-    public function getNotes(): ?string
+    public function getMedecin(): ?Medecin
     {
-        return $this->notes;
+        return $this->medecin;
     }
 
-    public function setNotes(?string $notes): self
+    public function setMedecin(?Medecin $medecin): self
     {
-        $this->notes = $notes;
+        $this->medecin = $medecin;
+        return $this;
+    }
+
+    public function getRendezVous(): ?RendezVous
+    {
+        return $this->rendezVous;
+    }
+
+    public function setRendezVous(?RendezVous $rendezVous): self
+    {
+        $this->rendezVous = $rendezVous;
+        return $this;
+    }
+
+    public function getDate(): ?\DateTimeInterface
+    {
+        return $this->date;
+    }
+
+    public function setDate(\DateTimeInterface $date): self
+    {
+        $this->date = $date;
+        return $this;
+    }
+
+    public function getMotif(): ?string
+    {
+        return $this->motif;
+    }
+
+    public function setMotif(string $motif): self
+    {
+        $this->motif = $motif;
         return $this;
     }
 
@@ -87,56 +110,31 @@ class Consultation
         return $this->diagnostic;
     }
 
-    public function setDiagnostic(?string $diagnostic): self
+    public function setDiagnostic(string $diagnostic): self
     {
         $this->diagnostic = $diagnostic;
         return $this;
     }
 
-    public function getDateConsultation(): ?\DateTimeInterface
+    public function getTraitement(): ?string
     {
-        return $this->dateConsultation;
+        return $this->traitement;
     }
 
-    public function setDateConsultation(\DateTimeInterface $dateConsultation): self
+    public function setTraitement(?string $traitement): self
     {
-        $this->dateConsultation = $dateConsultation;
+        $this->traitement = $traitement;
         return $this;
     }
 
-    public function getOrdonnance(): ?Ordonnance
+    public function getObservations(): ?string
     {
-        return $this->ordonnance;
+        return $this->observations;
     }
 
-    public function setOrdonnance(?Ordonnance $ordonnance): self
+    public function setObservations(?string $observations): self
     {
-        $this->ordonnance = $ordonnance;
-        if ($ordonnance && $ordonnance->getConsultation() !== $this) {
-            $ordonnance->setConsultation($this);
-        }
-        return $this;
-    }
-
-    public function getDuree(): int
-    {
-        return $this->duree;
-    }
-
-    public function setDuree(int $duree): self
-    {
-        $this->duree = $duree;
-        return $this;
-    }
-
-    public function getType(): string
-    {
-        return $this->type;
-    }
-
-    public function setType(string $type): self
-    {
-        $this->type = $type;
+        $this->observations = $observations;
         return $this;
     }
 }

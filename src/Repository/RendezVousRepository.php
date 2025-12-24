@@ -31,6 +31,8 @@ class RendezVousRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+
+
     /**
      * Trouve les rendez-vous d'un médecin
      */
@@ -131,7 +133,7 @@ class RendezVousRepository extends ServiceEntityRepository
      */
     public function isSlotAvailable(Medecin $medecin, \DateTimeInterface $dateTime, int $durationMinutes = 30): bool
     {
-        $endDateTime = (clone $dateTime)->modify("+{$durationMinutes} minutes");
+        $endDateTime = \DateTimeImmutable::createFromInterface($dateTime)->modify("+{$durationMinutes} minutes");
 
         $conflictingRendezVous = $this->createQueryBuilder('r')
             ->andWhere('r.medecin = :medecin')

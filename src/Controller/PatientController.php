@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Repository\MedecinRepository;
@@ -15,17 +14,67 @@ use App\Repository\MedecinRepository;
 class PatientController extends AbstractController
 {
     #[Route('/patient/dashboard', name: 'app_patient_dashboard')]
-    #[IsGranted('ROLE_PATIENT')]
-    public function dashboard(EntityManagerInterface $em): Response
+    public function dashboard(EntityManagerInterface $em, Request $request, MedecinRepository $medecinRepository): Response
     {
+        /** @var \App\Entity\Patient $patient */
+        $patient = $this->getUser();
+
         $specialities = $em->getRepository(\App\Entity\Speciality::class)->findAll();
+
+        // Fetch real appointments
+        $appointments = $em->getRepository(\App\Entity\RendezVous::class)->findBy(
+            ['patient' => $patient],
+            ['dateHeure' => 'ASC']
+        );
+
+        // Récupérer le dernier médecin consulté via Cookie
+        $lastDoctor = null;
+        $lastDoctorId = $request->cookies->get('last_doctor_id');
+
+        if ($lastDoctorId) {
+            $candidateDoctor = $medecinRepository->find($lastDoctorId);
+
+            if ($candidateDoctor) {
+                $now = new \DateTime();
+
+                // Vérifier s'il existe un RDV annulé avec ce médecin
+                $hasCancelledRdv = false;
+                $hasFutureRdv = false;
+
+                foreach ($appointments as $rdv) {
+                    if ($rdv->getMedecin()->getId() === $candidateDoctor->getId()) {
+                        // Vérifier s'il y a un RDV annulé
+                        if ($rdv->getStatut() === 'annule') {
+                            $hasCancelledRdv = true;
+                        }
+
+                        // Vérifier s'il y a un RDV futur actif
+                        if (
+                            $rdv->getDateHeure() > $now &&
+                            in_array($rdv->getStatut(), ['en_attente', 'confirme'])
+                        ) {
+                            $hasFutureRdv = true;
+                        }
+                    }
+                }
+
+                // Afficher la suggestion SEULEMENT si :
+                // 1. Il y a eu un RDV annulé avec ce médecin
+                // 2. ET il n'y a pas de RDV futur actif
+                if ($hasCancelledRdv && !$hasFutureRdv) {
+                    $lastDoctor = $candidateDoctor;
+                }
+            }
+        }
+
         return $this->render('patient/dashboard.html.twig', [
-            'specialities' => $specialities
+            'specialities' => $specialities,
+            'appointments' => $appointments,
+            'lastDoctor' => $lastDoctor
         ]);
     }
 
     #[Route('/patient/search-medecin', name: 'app_patient_search_medecin', methods: ['GET'])]
-    #[IsGranted('ROLE_PATIENT')]
     public function searchMedecin(Request $request, MedecinRepository $medecinRepository): JsonResponse
     {
         $nom = $request->query->get('nom', '');
@@ -54,7 +103,6 @@ class PatientController extends AbstractController
     }
 
     #[Route('/patient/edit-profile', name: 'app_patient_edit_profile', methods: ['POST'])]
-    #[IsGranted('ROLE_PATIENT')]
     public function editProfile(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         /** @var \App\Entity\Patient $patient */

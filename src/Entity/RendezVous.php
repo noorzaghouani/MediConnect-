@@ -12,7 +12,7 @@ use Doctrine\Common\Collections\Collection;
 class RendezVous
 {
     const STATUT_ATTENTE = 'en_attente';
-    const STATUT_CONFIRME = 'confirme'; 
+    const STATUT_CONFIRME = 'confirme';
     const STATUT_ANNULE = 'annule';
     const STATUT_TERMINE = 'termine';
 
@@ -31,7 +31,7 @@ class RendezVous
 
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $dateHeure = null;
-    
+
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $date = null;
 
@@ -49,6 +49,8 @@ class RendezVous
 
     #[ORM\OneToOne(targetEntity: 'App\Entity\Consultation', mappedBy: 'rendezVous')]
     private ?Consultation $consultation = null;
+
+
 
     #[ORM\Column(type: 'datetime_immutable')]
     private ?\DateTimeImmutable $createdAt = null;
@@ -113,12 +115,12 @@ class RendezVous
     }
 
     public function setStatut(string $statut): self
-    { 
+    {
         if (!in_array($statut, [self::STATUT_ATTENTE, self::STATUT_CONFIRME, self::STATUT_ANNULE, self::STATUT_TERMINE])) {
             throw new \InvalidArgumentException("Statut invalide: $statut");
         }
-        $this->statut = $statut; 
-        return $this; 
+        $this->statut = $statut;
+        return $this;
     }
 
     public function getMotif(): ?string
@@ -154,19 +156,7 @@ class RendezVous
         return $this;
     }
 
-    public function getConsultation(): ?Consultation
-    {
-        return $this->consultation;
-    }
 
-    public function setConsultation(?Consultation $consultation): self
-    {
-        $this->consultation = $consultation;
-        if ($consultation && $consultation->getRendezVous() !== $this) {
-            $consultation->setRendezVous($this);
-        }
-        return $this;
-    }
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {
@@ -238,7 +228,7 @@ class RendezVous
 
     public function getDateFin(): \DateTimeInterface
     {
-        return (clone $this->dateHeure)->modify("+{$this->duree} minutes");
+        return \DateTimeImmutable::createFromInterface($this->dateHeure)->modify("+{$this->duree} minutes");
     }
 
     // Méthode pour obtenir la date formatée
@@ -256,7 +246,7 @@ class RendezVous
     {
         return $this->dateHeure->format('d/m/Y à H:i');
     }
-public function getDate(): ?\DateTimeInterface
+    public function getDate(): ?\DateTimeInterface
     {
         return $this->date;
     }

@@ -1,0 +1,56 @@
+/* Bouton suppression disponibilité - Design moderne */
+.btn-delete-availability {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #dc2626;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(220, 38, 38, 0.15);
+}
+
+.btn-delete-availability:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.btn-delete-availability i {
+    font-size: 14px;
+}
+
+/* Availability list styling */
+.availability-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.availability-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: translateX(3px);
+}
+
+.availability-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.availability-info strong {
+    color: #0d9488;
+    font-size: 15px;
+}
+
+.availability-info span {
+    color: #64748b;
+    font-size: 14px;
+}

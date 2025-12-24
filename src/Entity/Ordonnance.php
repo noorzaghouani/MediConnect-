@@ -1,8 +1,8 @@
 <?php
-// src/Entity/Ordonnance.php
 
 namespace App\Entity;
 
+use App\Repository\OrdonnanceRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrdonnanceRepository::class)]
@@ -10,25 +10,22 @@ class Ordonnance
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\OneToOne(targetEntity: Consultation::class, inversedBy: 'ordonnance')]
+    #[ORM\OneToOne(targetEntity: Consultation::class)]
     #[ORM\JoinColumn(nullable: false)]
     private ?Consultation $consultation = null;
 
     #[ORM\Column(type: 'text')]
     private ?string $contenu = null;
 
-    #[ORM\Column(type: 'date')]
-    private ?\DateTimeInterface $date = null;
-
-    #[ORM\Column(type: 'boolean')]
-    private bool $estValide = true;
+    #[ORM\Column(type: 'datetime_immutable')]
+    private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
     {
-        $this->date = new \DateTime();
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): ?int
@@ -41,7 +38,7 @@ class Ordonnance
         return $this->consultation;
     }
 
-    public function setConsultation(?Consultation $consultation): self
+    public function setConsultation(Consultation $consultation): self
     {
         $this->consultation = $consultation;
         return $this;
@@ -58,25 +55,14 @@ class Ordonnance
         return $this;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->date;
+        return $this->createdAt;
     }
 
-    public function setDate(\DateTimeInterface $date): self
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self
     {
-        $this->date = $date;
-        return $this;
-    }
-
-    public function isEstValide(): bool
-    {
-        return $this->estValide;
-    }
-
-    public function setEstValide(bool $estValide): self
-    {
-        $this->estValide = $estValide;
+        $this->createdAt = $createdAt;
         return $this;
     }
 }

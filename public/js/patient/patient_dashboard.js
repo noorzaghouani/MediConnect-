@@ -167,10 +167,112 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.addEventListener('click', function () {
                 const medecinId = this.getAttribute('data-medecin-id');
                 const doctorName = this.closest('.doctor-card').querySelector('h4').textContent;
-                alert(`Fonctionnalité "Prendre RDV" avec ${doctorName} sera disponible prochainement.`);
+
+                // Mettre à jour le menu actif
+                document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                const prendreRdvLink = document.querySelector('.nav-menu .nav-item:nth-child(2) .nav-link');
+                if (prendreRdvLink) {
+                    prendreRdvLink.classList.add('active');
+                }
+
+                showAvailabilityModal(medecinId, doctorName);
             });
         });
     }
+
+    // ============================
+    // Availability Modal
+    // ============================
+    // ============================
+    // Availability Modal
+    // ============================
+    window.showAvailabilityModal = function (medecinId, doctorName) {
+        // Create modal if not exists
+        let modal = document.getElementById('availabilityModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'availabilityModal';
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-container">
+                    <div class="modal-header-teal">
+                        <div class="modal-header-content">
+                            <h2 class="modal-title-white" id="availDoctorName">Disponibilités</h2>
+                        </div>
+                        <button class="modal-close-white" onclick="document.getElementById('availabilityModal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body-white">
+                        <div id="availabilityList" class="availability-grid">
+                            <p class="loading-text">Chargement des disponibilités...</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Add Styles for grid
+            if (!document.getElementById('availabilityStyles')) {
+                const style = document.createElement('style');
+                style.id = 'availabilityStyles';
+                style.textContent = `
+                    .availability-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; padding: 20px; }
+                    .slot-btn { background: #f0fdf9; border: 1px solid #ccfbf1; padding: 10px; border-radius: 6px; cursor: pointer; text-align: center; transition: all 0.2s; }
+                    .slot-btn:hover { background: #0d9488; color: white; border-color: #0d9488; transform: translateY(-2px); }
+                    .slot-date { font-size: 0.8rem; color: #64748b; margin-bottom: 4px; }
+                    .slot-btn:hover .slot-date { color: #e2e8f0; }
+                    .slot-time { font-weight: 600; font-size: 1rem; }
+                    .loading-text { text-align: center; width: 100%; color: #64748b; grid-column: 1 / -1; }
+                    .no-slots { text-align: center; width: 100%; color: #64748b; grid-column: 1 / -1; padding: 20px; }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        modal.querySelector('#availDoctorName').textContent = `Disponibilités - ${doctorName}`;
+        modal.classList.add('active');
+
+        const list = modal.querySelector('#availabilityList');
+        list.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Chargement...</p>';
+
+        // Fetch availabilities
+        fetch(`/api/medecin/${medecinId}/disponibilites`)
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log('Disponibilités reçues:', data);
+
+                if (!Array.isArray(data) || data.length === 0) {
+                    list.innerHTML = '<p class="no-slots">Aucun créneau disponible pour le moment.</p>';
+                    return;
+                }
+
+                list.innerHTML = data.map(slot => `
+                    <div class="slot-btn" onclick="bookAppointment(${slot.id})">
+                        <div class="slot-date">${slot.display_date}</div>
+                        <div class="slot-time">${slot.display_time}</div>
+                    </div>
+                `).join('');
+            })
+            .catch(err => {
+                console.error('Erreur chargement disponibilités:', err);
+                list.innerHTML = `<p class="no-slots" style="color:red">Erreur: ${err.message}</p>`;
+            });
+    };
+
+    // Make it global so onclick works
+    window.bookAppointment = function (slotId) {
+        if (confirm('Confirmer ce rendez-vous ?')) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/patient/book/${slotId}`;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    };
 
     function showError(message) {
         if (resultsList) {
@@ -212,17 +314,17 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
             const card = this.closest('.appointment-card');
-            const doctorName = card.querySelector('h3')?.textContent || '';
+            const doctorName = card.querySelector('.doctor-info h3')?.textContent.trim() || 'ce médecin';
+            const rdvId = this.getAttribute('data-id'); // Il faudra ajouter cet attribut dans le twig
 
             if (confirm(`Voulez-vous vraiment annuler le rendez-vous avec ${doctorName} ?`)) {
-                card.style.transition = 'all 0.5s ease';
-                card.style.opacity = '0';
-                card.style.transform = 'translateX(-20px)';
 
-                setTimeout(() => {
-                    card.remove();
-                    alert('Rendez-vous annulé avec succès');
-                }, 500);
+                // Créer un formulaire pour soumettre la requête POST
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/patient/cancel/${rdvId}`;
+                document.body.appendChild(form);
+                form.submit();
             }
         });
     });
