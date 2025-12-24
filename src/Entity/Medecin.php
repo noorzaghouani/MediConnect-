@@ -24,7 +24,18 @@ class Medecin extends User
         $this->setRoles(['ROLE_MEDECIN']);
         $this->disponibilites = new ArrayCollection();
         $this->rendezVous = new ArrayCollection();
+        $this->consultations = new ArrayCollection();
     }
+
+    #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: Consultation::class)]
+    private Collection $consultations;
+
+
+
+    /**
+     * @return Collection<int, Consultation>
+     */
+
 
     #[ORM\ManyToOne(targetEntity: Speciality::class)]
     #[ORM\JoinColumn(nullable: true)]

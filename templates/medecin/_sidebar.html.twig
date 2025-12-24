@@ -1,0 +1,45 @@
+<aside class="sidebar">
+    <div class="logo-section">
+        <div class="logo-icon">
+            ⚕️
+        </div>
+        <div class="logo-text">MediConnect</div>
+    </div>
+
+    <div class="doctor-profile">
+        <div class="doctor-avatar">
+            <i class="fas fa-user-md"></i>
+        </div>
+        <div class="doctor-name">Dr. {{ app.user.prenom }} {{ app.user.nom }}</div>
+        <div class="doctor-specialty">{{ app.user.specialite.nom|default('Médecin généraliste') }}</div>
+    </div>
+
+    <nav>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{{ path('app_medecin_dashboard') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_medecin_dashboard' %}active{% endif %}" id="nav-appointments">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>Mes Rendez-vous</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" id="nav-availability">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Mes Disponibilités</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ path('app_medecin_patients') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_medecin_patients' %}active{% endif %}" id="nav-patients">
+                    <i class="fas fa-users"></i>
+                    <span>Mes Patients</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link" id="nav-prescriptions" onclick="alert('Module Ordonnances bientôt disponible')">
+                    <i class="fas fa-file-prescription"></i>
+                    <span>Ordonnances</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</aside>

@@ -1,61 +1,20 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Médecin - MediConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Médecin - MediConnect{% endblock %}
+
+{% block stylesheets %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/medecin/medecin_dashboard.css') }}">
     <link rel="stylesheet" href="{{ asset('css/medecin/modal.css') }}?v=2">
-</head>
-<body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="logo-section">
-            <div class="logo-icon">
-                ⚕️
-            </div>
-            <div class="logo-text">MediConnect</div>
-        </div>
+    <link rel="stylesheet" href="{{ asset('css/medecin/availability.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/medecin/toast.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/medecin/appointment_actions.css') }}">
+{% endblock %}
 
-        <div class="doctor-profile">
-            <div class="doctor-avatar">
-                <i class="fas fa-user-md"></i>
-            </div>
-            <div class="doctor-name">Dr. {{ app.user.prenom }} {{ app.user.nom }}</div>
-            <div class="doctor-specialty">{{ app.user.specialite|default('Médecin généraliste') }}</div>
-        </div>
+{% block custom_styles %}{% endblock %}
 
-        <nav>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="#" class="nav-link active">
-                        <i class="fas fa-calendar-check"></i>
-                        <span>Mes Rendez-vous</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" id="availabilityMenuBtn">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span>Mes Disponibilités</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-users"></i>
-                        <span>Mes Patients</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-file-prescription"></i>
-                        <span>Ordonnances</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
+{% block body %}
+    {% include 'medecin/_sidebar.html.twig' %}
 
     <!-- Main Content -->
     <main class="main-content">
@@ -99,77 +58,61 @@
             </div>
 
             <div class="appointments-list">
-                <!-- Appointment 1 -->
-                <div class="appointment-item">
-                    <div class="appointment-header">
-                        <div class="patient-info">
-                            <h4>M. Karim Mansouri</h4>
-                            <p><i class="fas fa-phone"></i> 0623456789 • Première consultation</p>
-                        </div>
-                        <div class="appointment-time">
-                            <i class="fas fa-clock"></i> 10:30
-                        </div>
+                {% if appointments is empty %}
+                    <div class="no-appointments" style="text-align: center; padding: 40px; color: #64748b;">
+                        <i class="fas fa-calendar-check" style="font-size: 2rem; margin-bottom: 15px;"></i>
+                        <p>Aucun rendez-vous prévu pour le moment.</p>
                     </div>
-                    <div class="appointment-actions">
-                        <button class="action-btn btn-confirm">
-                            <i class="fas fa-check"></i> Confirmer
-                        </button>
-                        <button class="action-btn btn-view">
-                            <i class="fas fa-folder-open"></i> Voir Dossier
-                        </button>
-                        <button class="action-btn btn-consult">
-                            <i class="fas fa-stethoscope"></i> Consulter
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Appointment 2 -->
-                <div class="appointment-item">
-                    <div class="appointment-header">
-                        <div class="patient-info">
-                            <h4>Mme. Amina Tazi</h4>
-                            <p><i class="fas fa-phone"></i> 0634567890 • Contrôle post-opératoire</p>
+                {% else %}
+                    {% for rdv in appointments %}
+                        <div class="appointment-item">
+                            <div class="appointment-header">
+                                <div class="patient-info">
+                                    <h4>{{ rdv.patient.prenom }} {{ rdv.patient.nom }}</h4>
+                                    <p>
+                                        <i class="fas fa-phone"></i> {{ rdv.patient.telephone|default('Non renseigné') }}
+                                        {% if rdv.statut == 'en_attente' %}
+                                            <span style="color: #eab308; font-weight: bold; font-size: 0.8em; margin-left: 10px;">• EN ATTENTE</span>
+                                        {% elseif rdv.statut == 'confirme' %}
+                                            <span style="color: #10b981; font-weight: bold; font-size: 0.8em; margin-left: 10px;">• CONFIRMÉ</span>
+                                        {% elseif rdv.statut == 'annule' %}
+                                            <span style="color: #ef4444; font-weight: bold; font-size: 0.8em; margin-left: 10px;">• ANNULÉ</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="appointment-time">
+                                    <i class="fas fa-calendar-day"></i> {{ rdv.dateHeure|date('d/m/Y') }} <br>
+                                    <i class="fas fa-clock"></i> {{ rdv.dateHeure|date('H:i') }}
+                                </div>
+                            </div>
+                            <div class="appointment-actions">
+                                {% if rdv.statut == 'en_attente' %}
+                                    {# Boutons pour confirmer ou refuser le RDV #}
+                                    <form method="POST" action="{{ path('app_medecin_confirm_appointment', {'id': rdv.id}) }}" style="display: inline;">
+                                        <button type="submit" class="action-btn btn-success">
+                                            <i class="fas fa-check"></i> Confirmer
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ path('app_medecin_reject_appointment', {'id': rdv.id}) }}" style="display: inline;">
+                                        <button type="submit" class="action-btn btn-danger">
+                                            <i class="fas fa-times"></i> Refuser
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                
+                                <a href="{{ path('app_dossier_show', {'id': rdv.patient.id}) }}" class="action-btn btn-view" style="text-decoration:none;">
+                                    <i class="fas fa-folder-open"></i> Voir Dossier
+                                </a>
+                                
+                                {% if rdv.statut == 'confirme' %}
+                                    <a href="{{ path('app_consultation_new', {'id': rdv.id}) }}" class="action-btn btn-consult" style="text-decoration:none;">
+                                        <i class="fas fa-stethoscope"></i> Consulter
+                                    </a>
+                                {% endif %}
+                            </div>
                         </div>
-                        <div class="appointment-time">
-                            <i class="fas fa-clock"></i> 14:00
-                        </div>
-                    </div>
-                    <div class="appointment-actions">
-                        <button class="action-btn btn-confirm">
-                            <i class="fas fa-check"></i> Confirmer
-                        </button>
-                        <button class="action-btn btn-view">
-                            <i class="fas fa-folder-open"></i> Voir Dossier
-                        </button>
-                        <button class="action-btn btn-consult">
-                            <i class="fas fa-stethoscope"></i> Consulter
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Appointment 3 -->
-                <div class="appointment-item">
-                    <div class="appointment-header">
-                        <div class="patient-info">
-                            <h4>M. Youssef Alami</h4>
-                            <p><i class="fas fa-phone"></i> 0645678901 • Suivi régulier</p>
-                        </div>
-                        <div class="appointment-time">
-                            <i class="fas fa-clock"></i> 16:30
-                        </div>
-                    </div>
-                    <div class="appointment-actions">
-                        <button class="action-btn btn-confirm">
-                            <i class="fas fa-check"></i> Confirmer
-                        </button>
-                        <button class="action-btn btn-view">
-                            <i class="fas fa-folder-open"></i> Voir Dossier
-                        </button>
-                        <button class="action-btn btn-consult">
-                            <i class="fas fa-stethoscope"></i> Consulter
-                        </button>
-                    </div>
-                </div>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
     </main>
@@ -212,7 +155,7 @@
                             <label class="field-label-left">Spécialité</label>
                             <select name="specialite" class="field-input-right">
                                 <option value="">Sélectionnez votre spécialité</option>
-                                {% for speciality in specialities %}
+                                {% for speciality in specialities|default([]) %}
                                     <option value="{{ speciality.id }}" {% if app.user.specialite and app.user.specialite.id == speciality.id %}selected{% endif %}>{{ speciality.nom }}</option>
                                 {% endfor %}
                             </select>
@@ -279,18 +222,18 @@
                 <form id="availabilityForm">
                     <div class="form-group-vertical">
                         <label>Sélectionner la date</label>
-                        <input type="date" id="availability_date" name="date" class="field-input-full" min="{{ "now"|date("Y-m-d") }}" required>
+                        <input type="date" id="availability_date" name="date" class="field-input-full" min="{{ "now"|date("Y-m-d") }}">
                     </div>
 
                     <div class="availability-hours-row">
                         <div class="form-group-vertical">
                             <label>Heure de début</label>
-                            <input type="time" id="availability_heure_debut" name="heure_debut" class="field-input-full" value="09:00" required>
+                            <input type="time" id="availability_heure_debut" name="heure_debut" class="field-input-full" value="09:00">
                         </div>
 
                         <div class="form-group-vertical">
                             <label>Heure de fin</label>
-                            <input type="time" id="availability_heure_fin" name="heure_fin" class="field-input-full" value="17:00" required>
+                            <input type="time" id="availability_heure_fin" name="heure_fin" class="field-input-full" value="17:00">
                         </div>
                     </div>
 
@@ -314,7 +257,10 @@
             </div>
         </div>
     </div>
+{% endblock %}
 
-    <script src="{{ asset('js/medecin/dashboard.js') }}"></script>
-</body>
-</html>
+
+
+{% block javascripts %}
+    <script src="{{ asset('js/medecin/dashboard.js') }}?v=20251224"></script>
+{% endblock %}

@@ -7,7 +7,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\Disponibilite;
@@ -16,35 +15,39 @@ use App\Entity\Speciality;
 class MedecinController extends AbstractController
 {
     #[Route('/medecin/dashboard', name: 'app_medecin_dashboard')]
-    #[IsGranted('ROLE_MEDECIN')]
     public function dashboard(EntityManagerInterface $em): Response
     {
         // Récupérer l'utilisateur connecté (qui est un Medecin)
         $medecin = $this->getUser();
         $specialities = $em->getRepository(Speciality::class)->findAll();
 
+        // Récupérer les rendez-vous du médecin
+        $appointments = $em->getRepository(\App\Entity\RendezVous::class)->findBy(
+            ['medecin' => $medecin],
+            ['dateHeure' => 'ASC']
+        );
+
         return $this->render('medecin/dashboard.html.twig', [
             'medecin' => $medecin,
             'specialities' => $specialities,
+            'appointments' => $appointments
         ]);
     }
 
-    #[Route('/medecin/consultations', name: 'app_medecin_consultations')]
-    #[IsGranted('ROLE_MEDECIN')]
-    public function consultations(): Response
+    #[Route('/medecin/patients', name: 'app_medecin_patients')]
+    public function patients(EntityManagerInterface $em): Response
     {
-        return $this->render('medecin/consultations.html.twig');
+        $medecin = $this->getUser();
+        $patients = $em->getRepository(\App\Entity\Patient::class)->findPatientsByMedecin($medecin);
+
+        return $this->render('medecin/patients.html.twig', [
+            'patients' => $patients
+        ]);
     }
 
-    #[Route('/medecin/disponibilites', name: 'app_medecin_disponibilites')]
-    #[IsGranted('ROLE_MEDECIN')]
-    public function disponibilites(): Response
-    {
-        return $this->render('medecin/disponibilites.html.twig');
-    }
+
 
     #[Route('/medecin/profil', name: 'app_medecin_profil')]
-    #[IsGranted('ROLE_MEDECIN')]
     public function profil(EntityManagerInterface $em): Response
     {
         $medecin = $this->getUser();
@@ -57,7 +60,6 @@ class MedecinController extends AbstractController
     }
 
     #[Route('/medecin/edit-profile', name: 'app_medecin_edit_profile', methods: ['POST'])]
-    #[IsGranted('ROLE_MEDECIN')]
     public function editProfile(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
         /** @var \App\Entity\Medecin $medecin */
@@ -109,7 +111,6 @@ class MedecinController extends AbstractController
     }
 
     #[Route('/medecin/availability/add', name: 'app_medecin_add_availability', methods: ['POST'])]
-    #[IsGranted('ROLE_MEDECIN')]
     public function addAvailability(Request $request, EntityManagerInterface $entityManager): JsonResponse
     {
         /** @var \App\Entity\Medecin $medecin */
@@ -156,7 +157,6 @@ class MedecinController extends AbstractController
     }
 
     #[Route('/medecin/availability/list', name: 'app_medecin_list_availabilities', methods: ['GET'])]
-    #[IsGranted('ROLE_MEDECIN')]
     public function listAvailabilities(EntityManagerInterface $entityManager): JsonResponse
     {
         /** @var \App\Entity\Medecin $medecin */
@@ -180,7 +180,6 @@ class MedecinController extends AbstractController
     }
 
     #[Route('/medecin/availability/delete/{id}', name: 'app_medecin_delete_availability', methods: ['DELETE'])]
-    #[IsGranted('ROLE_MEDECIN')]
     public function deleteAvailability(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
         /** @var \App\Entity\Medecin $medecin */

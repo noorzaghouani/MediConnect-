@@ -1,6 +1,56 @@
 document.addEventListener('DOMContentLoaded', function () {
     console.log('Dashboard JS initialized');
 
+    // ============================
+    // TOAST NOTIFICATION SYSTEM
+    // ============================
+    function showToast(message, type = 'info') {
+        // Create container if doesn't exist
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            document.body.appendChild(container);
+        }
+
+        // Define icons and titles for each type
+        const config = {
+            success: { icon: 'fa-circle-check', title: 'Succès' },
+            error: { icon: 'fa-circle-xmark', title: 'Erreur' },
+            info: { icon: 'fa-circle-info', title: 'Information' },
+            warning: { icon: 'fa-triangle-exclamation', title: 'Attention' }
+        };
+
+        const { icon, title } = config[type] || config.info;
+
+        // Create toast element
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="fas ${icon}"></i>
+            </div>
+            <div class="toast-content">
+                <div class="toast-title">${title}</div>
+                <div class="toast-message">${message}</div>
+            </div>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto remove after animation
+        setTimeout(() => {
+            toast.remove();
+            // Remove container if empty
+            if (container.children.length === 0) {
+                container.remove();
+            }
+        }, 3000);
+    }
+
+    // Make showToast global
+    window.showToast = showToast;
+
     // Profile Modal Elements
     const profileModal = document.getElementById('editProfileModal');
     const openProfileBtn = document.getElementById('editProfileBtn');
@@ -9,10 +59,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Availability Modal Elements
     const availabilityModal = document.getElementById('availabilityModal');
-    const openAvailabilityBtn = document.getElementById('availabilityMenuBtn');
+    const openAvailabilityBtn = document.getElementById('nav-availability'); // ID updated
     const closeAvailabilityBtn = document.getElementById('closeAvailabilityBtn');
     const cancelAvailabilityBtn = document.getElementById('cancelAvailabilityBtn');
     const availabilityForm = document.getElementById('availabilityForm');
+
+    // Navigation Elements
+    const navItems = document.querySelectorAll('.nav-link');
+    const navAppointments = document.getElementById('nav-appointments');
+    const navPatients = document.getElementById('nav-patients');
+    const navPrescriptions = document.getElementById('nav-prescriptions');
+
+    // Helper: Set Active Nav
+    function setActiveNav(id) {
+        navItems.forEach(item => item.classList.remove('active'));
+        const activeItem = document.getElementById(id);
+        if (activeItem) activeItem.classList.add('active');
+    }
 
     // Profile Modal Functions
     function openProfileModal() {
@@ -37,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (availabilityModal) {
             availabilityModal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            setActiveNav('nav-availability'); // Highlight menu
             loadAvailabilities(); // Load existing availabilities
 
             // Set min date to today
@@ -53,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (availabilityModal) {
             availabilityModal.classList.remove('active');
             document.body.style.overflow = '';
+            setActiveNav('nav-appointments'); // Revert to Appointments
         }
     }
 
@@ -100,6 +165,28 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    // Nav Item Listeners
+    if (navAppointments) {
+        navAppointments.addEventListener('click', function (e) {
+            e.preventDefault();
+            closeAvailabilityModal(); // Ensure modals are closed
+            setActiveNav('nav-appointments');
+        });
+    }
+
+    if (navPatients) {
+        navPatients.addEventListener('click', function (e) {
+            // e.preventDefault() handled by onclick in HTML but strict separation preferred
+            setActiveNav('nav-patients');
+        });
+    }
+
+    if (navPrescriptions) {
+        navPrescriptions.addEventListener('click', function (e) {
+            setActiveNav('nav-prescriptions');
+        });
+    }
+
     // Availability Form Submission
     if (availabilityForm) {
         availabilityForm.addEventListener('submit', function (e) {
@@ -112,9 +199,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 heure_fin: formData.get('heure_fin')
             };
 
-            // Validation
-            if (!data.date) {
-                alert('Veuillez sélectionner une date');
+            // Si tous les champs sont vides, fermer la modal sans erreur
+            if (!data.date && !data.heure_debut && !data.heure_fin) {
+                closeAvailabilityModal();
+                return;
+            }
+
+            // Si au moins un champ est rempli, valider que TOUS sont remplis
+            if (!data.date || !data.heure_debut || !data.heure_fin) {
+                showToast('Veuillez remplir tous les champs pour ajouter une disponibilité', 'warning');
                 return;
             }
 
@@ -124,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
             today.setHours(0, 0, 0, 0);
 
             if (selectedDate < today) {
-                alert('❌ Vous ne pouvez pas sélectionner une date passée');
+                showToast('Vous ne pouvez pas sélectionner une date passée', 'error');
                 return;
             }
 
@@ -132,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const fin = new Date('2000-01-01 ' + data.heure_fin);
 
             if (debut >= fin) {
-                alert('L\'heure de fin doit être après l\'heure de début');
+                showToast('L\'heure de fin doit être après l\'heure de début', 'error');
                 return;
             }
 
@@ -147,16 +240,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(response => response.json())
                 .then(result => {
                     if (result.success) {
-                        alert('✅ ' + result.message);
+                        showToast(result.message, 'success');
                         availabilityForm.reset();
                         loadAvailabilities(); // Reload the list
+                        closeAvailabilityModal(); // Fermer la modal
                     } else {
-                        alert('❌ ' + result.message);
+                        showToast(result.message, 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('❌ Erreur lors de l\'enregistrement');
+                    showToast('Erreur lors de l\'enregistrement', 'error');
                 });
         });
     }
@@ -201,25 +295,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Delete Availability
     function deleteAvailability(id) {
-        if (!confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?')) {
-            return;
-        }
-
+        // Suppression directe sans confirmation
         fetch(`/medecin/availability/delete/${id}`, {
             method: 'DELETE'
         })
             .then(response => response.json())
             .then(result => {
                 if (result.success) {
-                    alert('✅ ' + result.message);
+                    // Suppression silencieuse, juste recharger la liste
                     loadAvailabilities();
                 } else {
-                    alert('❌ ' + result.message);
+                    showToast(result.message, 'error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('❌ Erreur lors de la suppression');
+                showToast('Erreur lors de la suppression', 'error');
             });
     }
 

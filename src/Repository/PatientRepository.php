@@ -21,7 +21,7 @@ class PatientRepository extends ServiceEntityRepository
         parent::__construct($registry, Patient::class);
     }
 
-//    /**
+    //    /**
 //     * @return Patient[] Returns an array of Patient objects
 //     */
 //    public function findByExampleField($value): array
@@ -36,7 +36,7 @@ class PatientRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?Patient
+    //    public function findOneBySomeField($value): ?Patient
 //    {
 //        return $this->createQueryBuilder('p')
 //            ->andWhere('p.exampleField = :val')
@@ -45,4 +45,18 @@ class PatientRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    public function findPatientsByMedecin($medecin)
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.rendezVous', 'r')
+            ->where('r.medecin = :medecin')
+            ->andWhere('r.statut = :statut')
+            ->setParameter('medecin', $medecin)
+            ->setParameter('statut', 'confirme')
+            ->distinct()
+            ->orderBy('p.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }
