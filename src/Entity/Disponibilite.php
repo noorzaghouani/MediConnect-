@@ -1,11 +1,11 @@
 <?php
-// src/Entity/Disponibilite.php
 
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: 'App\Repository\DisponibiliteRepository')]
+#[ORM\Table(name: 'disponibilite')]
 class Disponibilite
 {
     #[ORM\Id]

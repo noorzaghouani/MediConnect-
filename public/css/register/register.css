@@ -43,7 +43,7 @@ body {
 .logo-icon {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+    background: #0D9488;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -117,8 +117,8 @@ body {
 }
 
 .form-group input:focus {
-    border-color: #0ea5e9;
-    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+    border-color: #0D9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
 }
 
 /* Radio buttons styling */
@@ -139,7 +139,7 @@ body {
     width: 20px;
     height: 20px;
     cursor: pointer;
-    accent-color: #0ea5e9;
+    accent-color: #0D9488;
 }
 
 .radio-option label {
@@ -180,9 +180,9 @@ body {
 }
 
 .role-option input[type="radio"]:checked+.role-label {
-    border-color: #0ea5e9;
-    background: rgba(14, 165, 233, 0.05);
-    color: #0ea5e9;
+    border-color: #0D9488;
+    background: rgba(13, 148, 136, 0.05);
+    color: #0D9488;
 }
 
 .password-input {
@@ -210,7 +210,7 @@ body {
 .register-btn {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+    background: #0D9488;
     color: white;
     border: none;
     border-radius: 10px;
@@ -224,7 +224,7 @@ body {
 
 .register-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+    box-shadow: 0 10px 25px rgba(13, 148, 136, 0.3);
 }
 
 .login-text {
@@ -235,14 +235,14 @@ body {
 }
 
 .login-link {
-    color: #0ea5e9;
+    color: #0D9488;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.3s;
 }
 
 .login-link:hover {
-    color: #0284c7;
+    color: #0D7B73;
 }
 
 /* File upload styling */
@@ -272,9 +272,9 @@ body {
 }
 
 .file-upload-label:hover {
-    border-color: #0ea5e9;
-    background: rgba(14, 165, 233, 0.05);
-    color: #0ea5e9;
+    border-color: #0D9488;
+    background: rgba(13, 148, 136, 0.05);
+    color: #0D9488;
 }
 
 .file-name {
@@ -417,4 +417,19 @@ select option:first-child,
         font-size: 16px;
         /* Éviter le zoom automatique sur mobile */
     }
+}
+
+/* Form hint text */
+.form-hint {
+    color: #94a3b8;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+/* Patient avatar circle */
+.patient-avatar-circle {
+    width: 40px;
+    height: 40px;
+    background: #f0fdfa;
+    color: #0d9488;
 }

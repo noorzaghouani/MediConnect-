@@ -1,0 +1,45 @@
+<aside class="sidebar">
+    <div class="logo-section">
+        <div class="logo-icon">
+            ⚕️
+        </div>
+        <div class="logo-text">MediConnect</div>
+    </div>
+
+    <div class="patient-profile">
+        <div class="patient-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <div class="patient-name">{{ app.user.prenom }} {{ app.user.nom }}</div>
+        <div class="patient-role">Patient</div>
+    </div>
+
+    <nav>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{{ path('app_patient_dashboard') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_patient_dashboard' %}active{% endif %}">
+                    <i class="fas fa-search"></i>
+                    <span>Chercher Médecin</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Prendre RDV</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="#" class="nav-link">
+                    <i class="fas fa-folder-open"></i>
+                    <span>Mon Dossier Médical</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ path('app_patient_ordonnances') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_patient_ordonnances' %}active{% endif %}">
+                    <i class="fas fa-file-prescription"></i>
+                    <span>Mes Ordonnances</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</aside>

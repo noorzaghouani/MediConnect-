@@ -1,0 +1,230 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Ordonnances - MediConnect{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/patient/patient_dashboard.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/common/modal.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/patient/ordonnances.css') }}?v=1">
+{% endblock %}
+
+{% block custom_styles %}{% endblock %}
+
+{% block body %}
+    {% include 'patient/_sidebar.html.twig' %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Bienvenue, {{ app.user.prenom }}</h1>
+                <p class="header-date">{{ "now"|date("l d F Y", "Europe/Paris") }}</p>
+            </div>
+            <div class="header-right">
+                <button class="header-btn btn-primary" id="editProfileBtn">
+                    <i class="fas fa-user-edit"></i>
+                    Éditer Profil
+                </button>
+                <a href="{{ path('app_logout') }}" class="header-btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        <!-- Ordonnances Section -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="fas fa-list"></i>
+                    Liste des ordonnances
+                </h2>
+                <span class="badge-count">{{ ordonnances|length }} ordonnance(s)</span>
+            </div>
+
+            {% if ordonnances is empty %}
+                <div class="no-appointments">
+                    <i class="fas fa-prescription"></i>
+                    <p>Aucune ordonnance prescrite.</p>
+                </div>
+            {% else %}
+                <div class="appointments-list">
+                    {% for ordonnance in ordonnances %}
+                        <div class="appointment-card">
+                            <div class="appointment-header">
+                                <div class="doctor-info">
+                                    <h3>
+                                        {% if ordonnance.medecin %}
+                                            Dr. {{ ordonnance.medecin.prenom }} {{ ordonnance.medecin.nom }}
+                                        {% elseif ordonnance.consultation and ordonnance.consultation.medecin %}
+                                            Dr. {{ ordonnance.consultation.medecin.prenom }} {{ ordonnance.consultation.medecin.nom }}
+                                        {% else %}
+                                            Médecin non spécifié
+                                        {% endif %}
+                                    </h3>
+                                    <p class="specialty">
+                                        <i class="fas fa-stethoscope"></i>
+                                        {% if ordonnance.medecin and ordonnance.medecin.specialite %}
+                                            {{ ordonnance.medecin.specialite.nom }}
+                                        {% elseif ordonnance.consultation and ordonnance.consultation.medecin and ordonnance.consultation.medecin.specialite %}
+                                            {{ ordonnance.consultation.medecin.specialite.nom }}
+                                        {% else %}
+                                            Médecin généraliste
+                                        {% endif %}
+                                    </p>
+                                    <p class="appointment-datetime">
+                                        <i class="fas fa-calendar"></i>
+                                        {{ ordonnance.createdAt|date('d/m/Y à H:i') }}
+                                    </p>
+                                </div>
+                                <div class="appointment-status">
+                                    <span class="status-badge confirmed">Prescrite</span>
+                                </div>
+                            </div>
+                            <div class="ordonnance-details">
+                                <p>
+                                    <strong>Contenu:</strong> {{ ordonnance.contenu|length > 150 ? ordonnance.contenu|slice(0, 150) ~ '...' : ordonnance.contenu }}
+                                </p>
+                            </div>
+                            <div class="appointment-actions">
+                                <button class="btn-print" 
+                                        data-id="{{ ordonnance.id }}"
+                                        data-contenu="{{ ordonnance.contenu|e('html_attr') }}"
+                                        data-date="{{ ordonnance.createdAt|date('d/m/Y') }}"
+                                        data-medecin="{% if ordonnance.medecin %}Dr. {{ ordonnance.medecin.prenom }} {{ ordonnance.medecin.nom }}{% else %}Médecin non spécifié{% endif %}"
+                                        data-patient="{{ app.user.prenom }} {{ app.user.nom }}">
+                                    <i class="fas fa-print"></i>
+                                    Imprimer
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Hidden Print Area -->
+    <div id="printArea" style="display: none;">
+        <div class="print-container">
+            <div class="print-header">
+                <h1>⚕️ MediConnect</h1>
+                <h2>Ordonnance Médicale</h2>
+            </div>
+            
+            <div class="print-info">
+                <p><strong>Date:</strong> <span id="printDate"></span></p>
+                <p><strong>Médecin:</strong> <span id="printMedecin"></span></p>
+                <p><strong>Patient:</strong> <span id="printPatient"></span></p>
+            </div>
+            
+            <hr class="print-divider">
+            
+            <div class="print-prescription">
+                <h3>Prescription:</h3>
+                <div id="printContenu"></div>
+            </div>
+            
+            <div class="print-signature">
+                <p>Signature du médecin</p>
+                <div class="signature-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Profile -->
+    <div id="editProfileModal" class="modal-overlay">
+        <div class="modal-container">
+            <!-- Modal Header (Teal with Avatar) -->
+            <div class="modal-header-teal">
+                <div class="modal-header-content">
+                    <div class="modal-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h2 class="modal-title-white">Éditer Profil & Sécurité</h2>
+                </div>
+                <button class="modal-close-white" id="closeModalBtn" type="button">&times;</button>
+            </div>
+
+            <div class="modal-body-white">
+                <form action="{{ path('app_patient_edit_profile') }}" method="POST" id="profileForm">
+                    
+                    <!-- Section: Informations Personnelles -->
+                    <div class="section-header-teal">
+                        <i class="fas fa-user"></i>
+                        <span>Informations Personnelles</span>
+                    </div>
+
+                    <div class="form-fields-gray">
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Nom</label>
+                            <input type="text" name="nom" class="field-input-right" value="{{ app.user.nom }}">
+                        </div>
+
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Prénom</label>
+                            <input type="text" name="prenom" class="field-input-right" value="{{ app.user.prenom }}">
+                        </div>
+
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Téléphone</label>
+                            <input type="tel" name="telephone" class="field-input-right" value="{{ app.user.telephone }}">
+                        </div>
+                    </div>
+
+                    <!-- Section: Changer Mot de Passe -->
+                    <div class="section-header-teal">
+                        <i class="fas fa-key"></i>
+                        <span>Changer Mot de Passe</span>
+                    </div>
+
+                    <div class="form-fields-gray">
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Mot de passe actuel</label>
+                            <input type="password" name="current_password" class="field-input-right" placeholder="••••••••">
+                        </div>
+
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Nouveau mot de passe</label>
+                            <input type="password" name="new_password" class="field-input-right" placeholder="••••••••">
+                        </div>
+
+                        <div class="field-horizontal">
+                            <label class="field-label-left">Confirmer le mot de passe</label>
+                            <input type="password" name="confirm_password" class="field-input-right" placeholder="••••••••">
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="modal-buttons">
+                        <button type="submit" class="btn-save-teal">
+                            <i class="fas fa-save"></i> Enregistrer Tout
+                        </button>
+                        <button type="button" class="btn-cancel-gray" id="cancelModalBtn">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('js/patient/patient_dashboard.js') }}?v=1"></script>
+    <script src="{{ asset('js/patient/ordonnances.js') }}?v=1"></script>
+{% endblock %}

@@ -10,6 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Repository\MedecinRepository;
+use App\Entity\Ordonnance;
 
 class PatientController extends AbstractController
 {
@@ -71,6 +72,23 @@ class PatientController extends AbstractController
             'specialities' => $specialities,
             'appointments' => $appointments,
             'lastDoctor' => $lastDoctor
+        ]);
+    }
+
+    #[Route('/patient/ordonnances', name: 'app_patient_ordonnances')]
+    public function ordonnances(EntityManagerInterface $em): Response
+    {
+        /** @var \App\Entity\Patient $patient */
+        $patient = $this->getUser();
+
+        // Récupérer toutes les ordonnances du patient
+        $ordonnances = $em->getRepository(Ordonnance::class)->findBy(
+            ['patient' => $patient],
+            ['createdAt' => 'DESC']
+        );
+
+        return $this->render('patient/ordonnances.html.twig', [
+            'ordonnances' => $ordonnances
         ]);
     }
 

@@ -23,7 +23,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" id="nav-availability">
+                <a href="{{ path('app_medecin_disponibilites') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_medecin_disponibilites' %}active{% endif %}" id="nav-availability">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Mes Disponibilités</span>
                 </a>
@@ -35,7 +35,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="nav-link" id="nav-prescriptions" onclick="alert('Module Ordonnances bientôt disponible')">
+                <a href="{{ path('app_medecin_ordonnances') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_medecin_ordonnance' %}active{% endif %}" id="nav-prescriptions">
                     <i class="fas fa-file-prescription"></i>
                     <span>Ordonnances</span>
                 </a>

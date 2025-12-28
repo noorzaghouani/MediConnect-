@@ -6,7 +6,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+use App\Repository\MedecinRepository;
+
+#[ORM\Entity(repositoryClass: MedecinRepository::class)]
 class Medecin extends User
 {
     #[ORM\Column(length: 255, nullable: true)]
@@ -41,6 +43,9 @@ class Medecin extends User
     #[ORM\JoinColumn(nullable: true)]
     private ?Speciality $specialite = null;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $estVerifie = false;
+
     public function getDiplome(): ?string
     {
         return $this->diplome;
@@ -53,6 +58,35 @@ class Medecin extends User
         return $this;
     }
 
+    /**
+     * @return Collection<int, Consultation>
+     */
+    public function getConsultations(): Collection
+    {
+        return $this->consultations;
+    }
+
+    public function addConsultation(Consultation $consultation): self
+    {
+        if (!$this->consultations->contains($consultation)) {
+            $this->consultations->add($consultation);
+            $consultation->setMedecin($this);
+        }
+
+        return $this;
+    }
+
+    public function removeConsultation(Consultation $consultation): self
+    {
+        if ($this->consultations->removeElement($consultation)) {
+            if ($consultation->getMedecin() === $this) {
+                $consultation->setMedecin(null);
+            }
+        }
+
+        return $this;
+    }
+
     public function getSpecialite(): ?Speciality
     {
         return $this->specialite;
@@ -61,6 +95,18 @@ class Medecin extends User
     public function setSpecialite(?Speciality $specialite): static
     {
         $this->specialite = $specialite;
+
+        return $this;
+    }
+
+    public function isEstVerifie(): bool
+    {
+        return $this->estVerifie;
+    }
+
+    public function setEstVerifie(bool $estVerifie): static
+    {
+        $this->estVerifie = $estVerifie;
 
         return $this;
     }

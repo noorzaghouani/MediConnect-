@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des Médecins - MediConnect Admin</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Hybrid Admin Styles (Base Layout) -->
+    <link rel="stylesheet" href="{{ asset('css/admin/dashboardadmin.css') }}">
+    <!-- Specific Admin Styles -->
+    <link rel="stylesheet" href="{{ asset('css/admin/medecinadmin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/profile_modal.css') }}">
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo-section">
+            <img src="{{ asset('images/uploaded_logo.png') }}" alt="MediConnect Logo" class="logo-img">
+            <span class="logo-text">MediConnect</span>
+        </div>
+
+        <div class="patient-profile">
+            <div class="patient-avatar">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h3 class="patient-name">Admin Principal</h3>
+            <p class="patient-role">Administrateur</p>
+        </div>
+
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_dashboard') }}" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Statistiques</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_demandes') }}" class="nav-link">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Demandes</span>
+                        {% if medecinsNonVerifiesCount > 0 %}
+                            <span class="notification-badge">{{ medecinsNonVerifiesCount }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_medecins') }}" class="nav-link active">
+                        <i class="fas fa-user-md"></i>
+                        <span>Médecin</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_patients') }}" class="nav-link">
+                        <i class="fas fa-user-injured"></i>
+                        <span>Patient</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <h1>MediConnect Admin</h1>
+            </div>
+            <div class="header-right">
+                <button class="header-btn btn-edit-profile">
+                    <i class="fas fa-user-edit"></i> Éditer Profil
+                </button>
+                <a href="{{ path('app_logout') }}" class="header-btn btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </div>
+        </header>
+
+        <!-- DOCTOR LIST PAGE HEADER -->
+        <div class="page-header-actions">
+            <h2 class="section-title-large">Liste des Médecins</h2>
+            
+            <form action="{{ path('app_admin_medecins') }}" method="GET" class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" name="q" value="{{ searchTerm|default('') }}" class="search-input" placeholder="Recherche par nom, email, spécialité...">
+                <!-- Optional: Add a hidden submit button if needed, but enter works by default -->
+            </form>
+        </div>
+
+        <!-- DOCTORS TABLE -->
+        <div class="section-container">
+            <div class="table-responsive">
+                <table class="custom-table" id="doctorsTable">
+                    <thead>
+                        <tr>
+                            <th class="table-cell-id">#</th>
+                            <th>Nom complet</th>
+                            <th>Date de création</th>
+                            <th class="table-cell-actions">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for medecin in medecins %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td class="font-weight-bold">Dr. {{ medecin.prenom }} {{ medecin.nom }}</td>
+                                <td>{{ medecin.createdAt ? medecin.createdAt|date('d/m/Y') : 'N/A' }}</td>
+                                <td class="table-cell-actions">
+                                    <button class="btn btn-view" onclick="openModal('{{ medecin.prenom }} {{ medecin.nom }}', '{{ medecin.specialite ? medecin.specialite.nom : 'Non définie' }}', '{{ medecin.email }}', '{{ medecin.telephone }}')">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </button>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="table-cell-centered">
+                                    Aucun résultat pour cette recherche.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- VIEWER MODAL (Teal Design) -->
+    <div id="doctorModal" class="modal-overlay">
+        <div class="modal-card">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="title-icon"><i class="fas fa-user-md"></i></div>
+                    <span>Détails Médecin</span>
+                </div>
+                <button onclick="closeModal()" class="btn-close"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="modal-body">
+                
+                <!-- Section Title -->
+                <div class="section-title">
+                    <i class="fas fa-user"></i> Informations Personnelles
+                </div>
+
+                <!-- Info Container -->
+                <div class="info-container">
+                    
+                    <div class="form-group">
+                        <label class="label">Nom complet</label>
+                        <div id="modalName" class="value-box">-</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Spécialité</label>
+                        <div id="modalSpecialty" class="value-box">-</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Email</label>
+                        <div id="modalEmail" class="value-box">-</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Téléphone</label>
+                        <div id="modalPhone" class="value-box">-</div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer-buttons">
+                    <button onclick="closeModal()" class="btn-modal-close">Fermer</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PROFILE MODAL -->
+    {% include 'admin/_profile_modal.html.twig' %}
+
+    <!-- JavaScript for Modal -->
+    <script>
+        // Modal Logic Only (Search JS Removed)
+        function openModal(name, specialty, email, phone) {
+            document.getElementById('modalName').textContent = name;
+            document.getElementById('modalSpecialty').textContent = specialty;
+            document.getElementById('modalEmail').textContent = email;
+            document.getElementById('modalPhone').textContent = phone;
+            
+            document.getElementById('doctorModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('doctorModal').style.display = 'none';
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('doctorModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+    <script src="{{ asset('js/admin/profile_modal.js') }}"></script>
+</body>
+</html>

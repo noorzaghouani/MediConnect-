@@ -16,6 +16,9 @@ class Patient extends User
     #[ORM\OneToOne(mappedBy: 'patient', targetEntity: DossierMedical::class, cascade: ['persist', 'remove'])]
     private ?DossierMedical $dossierMedical = null;
 
+    #[ORM\OneToMany(mappedBy: 'patient', targetEntity: Ordonnance::class)]
+    private Collection $ordonnances;
+
 
 
     public function __construct()
@@ -23,6 +26,7 @@ class Patient extends User
         parent::__construct();
         $this->setRoles(['ROLE_PATIENT']);
         $this->rendezVous = new ArrayCollection();
+        $this->ordonnances = new ArrayCollection();
     }
 
     /**
@@ -69,6 +73,37 @@ class Patient extends User
         }
 
         $this->dossierMedical = $dossierMedical;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Ordonnance>
+     */
+    public function getOrdonnances(): Collection
+    {
+        return $this->ordonnances;
+    }
+
+    public function addOrdonnance(Ordonnance $ordonnance): self
+    {
+        if (!$this->ordonnances->contains($ordonnance)) {
+            $this->ordonnances->add($ordonnance);
+            $ordonnance->setPatient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrdonnance(Ordonnance $ordonnance): self
+    {
+        if ($this->ordonnances->removeElement($ordonnance)) {
+            // Unset the owning side of the relation
+            if ($ordonnance->getPatient() === $this) {
+                // Note: setPatient requires Patient, so we reconsider the removal logic
+                // In Doctrine, removing from collection is sufficient
+            }
+        }
 
         return $this;
     }

@@ -1,0 +1,112 @@
+/* Print button styles */
+.btn-print {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.btn-print:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+}
+
+/* Ordonnance details */
+.ordonnance-details {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.ordonnance-details p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.9em;
+}
+
+/* Badge count */
+.badge-count {
+    background: #0d9488;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Print container styles */
+.print-container {
+    padding: 40px;
+    font-family: Arial, sans-serif;
+}
+
+.print-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.print-header h1 {
+    color: #0d9488;
+    margin: 0;
+}
+
+.print-header h2 {
+    margin: 10px 0;
+}
+
+.print-info p {
+    margin: 8px 0;
+}
+
+.print-divider {
+    border: 1px solid #ccc;
+    margin: 20px 0;
+}
+
+.print-prescription h3 {
+    margin-bottom: 10px;
+}
+
+.print-prescription #printContenu {
+    white-space: pre-wrap;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    min-height: 200px;
+}
+
+.print-signature {
+    margin-top: 40px;
+    text-align: right;
+}
+
+.signature-line {
+    border-top: 1px solid #000;
+    width: 200px;
+    margin-left: auto;
+    margin-top: 50px;
+}
+
+/* Print media query */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #printArea,
+    #printArea * {
+        visibility: visible;
+    }
+
+    #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+}

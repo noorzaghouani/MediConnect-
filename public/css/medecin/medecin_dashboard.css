@@ -12,7 +12,8 @@ body {
     background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
     color: #2d3748;
     overflow-x: hidden;
-    padding-top: 0 !important; /* Override base.css padding */
+    padding-top: 0 !important;
+    /* Override base.css padding */
 }
 
 /* ===================================
@@ -24,7 +25,7 @@ body {
     top: 0;
     height: 100vh;
     width: 280px;
-    background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%);
+    background: #0d9488;
     padding: 20px;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
     z-index: 1000;
@@ -59,8 +60,8 @@ body {
 }
 
 .doctor-profile {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    /* backdrop-filter: blur(10px); removed for solid look request */
     border-radius: 15px;
     padding: 20px;
     margin-bottom: 30px;
@@ -102,12 +103,13 @@ body {
     margin-bottom: 8px;
 }
 
-.nav-link {
+.nav-link,
+.nav-link:visited {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 14px 16px;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.9) !important;
     text-decoration: none;
     border-radius: 10px;
     transition: all 0.3s ease;
@@ -116,9 +118,11 @@ body {
 }
 
 .nav-link:hover,
-.nav-link.active {
+.nav-link.active,
+.nav-link:hover:visited,
+.nav-link.active:visited {
     background: rgba(255, 255, 255, 0.2);
-    color: white;
+    color: white !important;
     transform: translateX(5px);
 }
 
@@ -282,7 +286,9 @@ body {
 .appointment-actions {
     display: flex;
     gap: 10px;
-    margin-top: 12px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+    align-items: center;
 }
 
 .action-btn {
@@ -309,23 +315,33 @@ body {
 }
 
 .btn-view {
-    background: #3b82f6;
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
     color: white;
 }
 
 .btn-view:hover {
-    background: #2563eb;
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: white;
 }
 
 .btn-consult {
-    background: #f59e0b;
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
     color: white;
 }
 
 .btn-consult:hover {
-    background: #d97706;
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: white;
+}
+
+.btn-consult-yellow {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.btn-consult-yellow:hover {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
 }
 
 /* ===================================
@@ -367,4 +383,166 @@ body {
         width: 100%;
         justify-content: center;
     }
+}
+
+/* ===================================
+   APPOINTMENT ACTION BUTTONS
+   =================================== */
+.appointment-actions form {
+    margin: 0;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* ===================================
+   STATUS BADGES
+   =================================== */
+.status-pending {
+    color: #eab308;
+    font-weight: bold;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.status-confirmed {
+    color: #10b981;
+    font-weight: bold;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.status-cancelled {
+    color: #ef4444;
+    font-weight: bold;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.status-completed {
+    color: #0d9488;
+    font-weight: bold;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+/* ===================================
+   UTILITY CLASSES
+   =================================== */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+}
+
+.empty-state i {
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.no-decoration {
+    text-decoration: none;
+}
+
+
+/* ===================================
+   ALERT STYLES
+   =================================== */
+.alert {
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-error {
+    background: #FEE2E2;
+    color: #991B1B;
+    border-left: 4px solid #DC2626;
+}
+
+.alert-error i {
+    color: #dc2626;
+}
+
+.alert-warning {
+    background: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border-left: 4px solid #17a2b8;
+}
+
+
+/* Avatar circles */
+.patient-avatar-circle {
+    width: 40px;
+    height: 40px;
+    background: #f0fdfa;
+    color: #0d9488;
+}
+
+.ordonnance-avatar-circle {
+    width: 40px;
+    height: 40px;
+    background: #fef3c7;
+    color: #d97706;
+}
+
+/* Icon colors */
+.fas.fa-users.mb-3,
+.fas.fa-file-prescription.mb-3 {
+    color: #cbd5e1;
+}
+
+/* Button reset */
+.btn-delete {
+    border: none;
+    background: none;
+    padding: 0;
 }

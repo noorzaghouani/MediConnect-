@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordonnance - {{ ordonnance.patient.nom }} - MediConnect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/medecin/medecin_dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/medecin/ordonnance.css') }}">
+</head>
+<body>
+    {% include 'medecin/_sidebar.html.twig' %}
+
+    <main class="main-content">
+        <header class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-file-prescription"></i> Ordonnance</h1>
+                <p>{{ ordonnance.patient.nom|upper }} {{ ordonnance.patient.prenom }}</p>
+            </div>
+            <div class="header-right">
+                <a href="{{ path('app_medecin_ordonnance_edit', {'id': ordonnance.id}) }}" class="header-btn btn-primary me-2">
+                    <i class="fas fa-edit"></i> Modifier
+                </a>
+                <a href="{{ path('app_medecin_ordonnances') }}" class="header-btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+        </header>
+
+        <!-- Ordonnance Display -->
+        <div class="ordonnance-display">
+            <!-- Header Section -->
+            <div class="ordonnance-header">
+                <div class="ordonnance-title">
+                    <i class="fas fa-file-medical"></i>
+                    <h2>ORDONNANCE MÉDICALE</h2>
+                </div>
+                <div class="ordonnance-meta">
+                    <div class="meta-item">
+                        <strong>Date:</strong> {{ ordonnance.createdAt|date('d/m/Y') }}
+                    </div>
+                    <div class="meta-item">
+                        <strong>N° Ordonnance:</strong> ORD-{{ '%05d'|format(ordonnance.id) }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient & Doctor Info -->
+            <div class="ordonnance-parties">
+                <div class="partie-box">
+                    <div class="partie-label">
+                        <i class="fas fa-user"></i> Patient
+                    </div>
+                    <div class="partie-content">
+                        <strong>{{ ordonnance.patient.nom|upper }} {{ ordonnance.patient.prenom }}</strong>
+                        {% if ordonnance.patient.dateNaissance %}
+                            <div class="text-muted">Né(e) le {{ ordonnance.patient.dateNaissance|date('d/m/Y') }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="partie-box">
+                    <div class="partie-label">
+                        <i class="fas fa-user-md"></i> Médecin
+                    </div>
+                    <div class="partie-content">
+                        <strong>Dr. {{ app.user.nom|upper }} {{ app.user.prenom }}</strong>
+                        <div class="text-muted">{{ app.user.specialite.nom|default('Médecin généraliste') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prescription Content -->
+            <div class="ordonnance-content">
+                <div class="content-header">
+                    <i class="fas fa-pills"></i> Prescription
+                </div>
+                <div class="content-body">
+                    {{ ordonnance.contenu|nl2br }}
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="ordonnance-actions">
+                <button onclick="window.print()" class="btn-print">
+                    <i class="fas fa-print"></i> Imprimer
+                </button>
+                <form method="POST" action="{{ path('app_medecin_ordonnance_delete', {'id': ordonnance.id}) }}" class="inline-form" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette ordonnance ?');">
+                    <button type="submit" class="btn-delete-ord">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

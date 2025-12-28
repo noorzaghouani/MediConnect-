@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandes d'Inscription - MediConnect</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Hybrid Admin Styles -->
+    <link rel="stylesheet" href="{{ asset('css/admin/dashboardadmin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/profile_modal.css') }}">
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo-section">
+            <img src="{{ asset('images/uploaded_logo.png') }}" alt="MediConnect Logo" class="logo-img">
+            <span class="logo-text">MediConnect</span>
+        </div>
+
+        <div class="patient-profile">
+            <div class="patient-avatar">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <h3 class="patient-name">Admin Principal</h3>
+            <p class="patient-role">Administrateur</p>
+        </div>
+
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_dashboard') }}" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Statistiques</span>
+                        <!-- New Badge removed from here, as this is the requests page -->
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_demandes') }}" class="nav-link active">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Demandes</span>
+                        {% if medecinsNonVerifies|length > 0 %}
+                            <span class="notification-badge">{{ medecinsNonVerifies|length }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_medecins') }}" class="nav-link">
+                        <i class="fas fa-user-md"></i>
+                        <span>Médecin</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_patients') }}" class="nav-link">
+                        <i class="fas fa-user-injured"></i>
+                        <span>Patient</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <h1>MediConnect Admin</h1>
+            </div>
+            <div class="header-right">
+                <button class="header-btn btn-edit-profile">
+                    <i class="fas fa-user-edit"></i>
+                    Éditer Profil
+                </button>
+                <a href="{{ path('app_logout') }}" class="header-btn btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </header>
+
+        <!-- Demandes Section -->
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">Demandes d'Inscription Médecin</h2>
+                <div class="section-subtitle">({{ medecinsNonVerifies|length }} en attente)</div>
+            </div>
+            
+            {% if medecinsNonVerifies is empty %}
+                <div class="empty-state">
+                    <div class="check-circle">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <p class="empty-text">Aucune demande d'inscription en attente.</p>
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Médecin</th>
+                                <th>Spécialité (Assignation)</th>
+                                <th>Diplôme</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for medecin in medecinsNonVerifies %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        <div class="font-weight-bold">Dr. {{ medecin.prenom }} {{ medecin.nom }}</div>
+                                        <div class="info-text">{{ medecin.email }}</div>
+                                    </td>
+                                    <td>
+                                        <form action="{{ path('app_admin_valider_medecin', {'id': medecin.id}) }}" 
+                                              method="post" 
+                                              id="form-approve-{{ medecin.id }}">
+                                            <select name="specialite" required class="select-field">
+                                                <option value="">-- Choisir Spécialité --</option>
+                                                {% for spec in specialites %}
+                                                    <option value="{{ spec.id }}">{{ spec.nom }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        {% if medecin.diplome %}
+                                            <a href="{{ asset('uploads/diplomes/' ~ medecin.diplome) }}" target="_blank" class="btn btn-view" title="Voir Diplôme">
+                                                <i class="fas fa-eye"></i> Voir
+                                            </a>
+                                        {% else %}
+                                            <span class="info-text">Aucun</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button type="submit" form="form-approve-{{ medecin.id }}" class="btn btn-approve" title="Valider">
+                                                <i class="fas fa-check"></i> Approuver
+                                            </button>
+                                            
+                                            <form action="{{ path('app_admin_refuser_medecin', {'id': medecin.id}) }}" 
+                                                  method="post" 
+                                                  onsubmit="return confirm('Voulez-vous vraiment refuser ce médecin ?');"
+                                                  class="inline-form">
+                                                <button type="submit" class="btn btn-reject" title="Refuser">
+                                                    <i class="fas fa-times"></i> Rejeter
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+        
+    </main>
+
+    </main>
+
+    <!-- ADMIN PROFILE MODAL -->
+    {% include 'admin/_profile_modal.html.twig' %}
+    <script src="{{ asset('js/admin/profile_modal.js') }}"></script>
+</body>
+</html>

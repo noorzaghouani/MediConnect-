@@ -21,8 +21,7 @@ class Consultation
     #[ORM\JoinColumn(nullable: false)]
     private ?Medecin $medecin = null;
 
-    #[ORM\OneToOne(inversedBy: 'consultation', targetEntity: RendezVous::class)]
-    #[ORM\JoinColumn(nullable: true)]
+    #[ORM\OneToOne(mappedBy: 'consultation', targetEntity: RendezVous::class)]
     private ?RendezVous $rendezVous = null;
 
     #[ORM\Column(type: 'datetime')]
@@ -35,10 +34,22 @@ class Consultation
     private ?string $diagnostic = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $traitement = null;
+    private ?string $observations = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    private ?string $observations = null;
+    private ?string $symptomes = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $allergies = null;
+
+    #[ORM\Column(type: 'string', length: 20, nullable: true)]
+    private ?string $tension = null;
+
+    #[ORM\Column(type: 'decimal', precision: 4, scale: 1, nullable: true)]
+    private ?string $temperature = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $frequenceCardiaque = null;
 
     public function __construct()
     {
@@ -116,17 +127,6 @@ class Consultation
         return $this;
     }
 
-    public function getTraitement(): ?string
-    {
-        return $this->traitement;
-    }
-
-    public function setTraitement(?string $traitement): self
-    {
-        $this->traitement = $traitement;
-        return $this;
-    }
-
     public function getObservations(): ?string
     {
         return $this->observations;
@@ -135,6 +135,61 @@ class Consultation
     public function setObservations(?string $observations): self
     {
         $this->observations = $observations;
+        return $this;
+    }
+
+    public function getSymptomes(): ?string
+    {
+        return $this->symptomes;
+    }
+
+    public function setSymptomes(?string $symptomes): self
+    {
+        $this->symptomes = $symptomes;
+        return $this;
+    }
+
+    public function getAllergies(): ?string
+    {
+        return $this->allergies;
+    }
+
+    public function setAllergies(?string $allergies): self
+    {
+        $this->allergies = $allergies;
+        return $this;
+    }
+
+    public function getTension(): ?string
+    {
+        return $this->tension;
+    }
+
+    public function setTension(?string $tension): self
+    {
+        $this->tension = $tension;
+        return $this;
+    }
+
+    public function getTemperature(): ?string
+    {
+        return $this->temperature;
+    }
+
+    public function setTemperature(?string $temperature): self
+    {
+        $this->temperature = $temperature;
+        return $this;
+    }
+
+    public function getFrequenceCardiaque(): ?int
+    {
+        return $this->frequenceCardiaque;
+    }
+
+    public function setFrequenceCardiaque(?int $frequenceCardiaque): self
+    {
+        $this->frequenceCardiaque = $frequenceCardiaque;
         return $this;
     }
 }

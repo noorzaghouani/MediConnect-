@@ -41,12 +41,11 @@ class RendezVousController extends AbstractController
         $rdv->setPatient($patient);
         $rdv->setMedecin($disponibilite->getMedecin());
         $rdv->setDateHeure($disponibilite->getDateDebut());
-        $rdv->setDate($disponibilite->getDateDebut());
         $rdv->setStatut(RendezVous::STATUT_ATTENTE); // Initialement "En attente"
 
-        // Calculer la durée
+        // Calculer la durée en minutes (entier)
         $diff = $disponibilite->getDateFin()->getTimestamp() - $disponibilite->getDateDebut()->getTimestamp();
-        $rdv->setDuree($diff / 60);
+        $rdv->setDuree((int) ($diff / 60));
 
         // 3. Marquer le créneau comme indisponible
         $disponibilite->setEstDisponible(false);

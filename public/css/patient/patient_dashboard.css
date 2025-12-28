@@ -660,6 +660,7 @@ body {
 .sidebar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.4);
 }
+
 /* Flash Messages */
 .alert {
     padding: 15px 20px;
@@ -690,6 +691,7 @@ body {
         transform: translateY(-20px);
         opacity: 0;
     }
+
     to {
         transform: translateY(0);
         opacity: 1;
@@ -804,6 +806,86 @@ body {
     transition: all 0.3s ease;
 }
 
+/* ===================================
+   SUGGESTION BOX
+   =================================== */
+.suggestion-box {
+    margin-top: 20px;
+    background: #f0fdf9;
+    border: 1px solid #ccfbf1;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.suggestion-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.suggestion-icon {
+    background: #0d9488;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.suggestion-text h4 {
+    margin: 0;
+    color: #0f172a;
+}
+
+.suggestion-text p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.9em;
+}
+
+.suggestion-btn {
+    width: auto;
+    padding: 8px 15px;
+}
+
+/* ===================================
+   ENHANCED STATUS BADGES
+   =================================== */
+.status-badge.completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.cancelled {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* ===================================
+   NO APPOINTMENTS STATE
+   =================================== */
+.no-appointments {
+    text-align: center;
+    padding: 40px;
+}
+
+.no-appointments i {
+    font-size: 2rem;
+    color: #cbd5e1;
+    margin-bottom: 15px;
+}
+
+.no-appointments p {
+    color: #64748b;
+    margin: 0;
+}
+
+
 .btn-rdv:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
@@ -837,7 +919,11 @@ body {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
+    from {
+        transform: rotate(0deg);
+    }
 
+    to {
+        transform: rotate(360deg);
+    }
+}

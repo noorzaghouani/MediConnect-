@@ -2,97 +2,137 @@
 
 namespace App\Controller;
 
+use App\Entity\RendezVous;
+use App\Entity\Disponibilite;
+use App\Entity\Medecin;
+use App\Entity\Patient;
+use App\Form\DisponibiliteType;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use App\Entity\Disponibilite;
-use App\Entity\Speciality;
 
 class MedecinController extends AbstractController
 {
     #[Route('/medecin/dashboard', name: 'app_medecin_dashboard')]
-    public function dashboard(EntityManagerInterface $em): Response
+    public function dashboard(EntityManagerInterface $entityManager): Response
     {
-        // Récupérer l'utilisateur connecté (qui est un Medecin)
+        /** @var Medecin $medecin */
         $medecin = $this->getUser();
-        $specialities = $em->getRepository(Speciality::class)->findAll();
 
-        // Récupérer les rendez-vous du médecin
-        $appointments = $em->getRepository(\App\Entity\RendezVous::class)->findBy(
-            ['medecin' => $medecin],
-            ['dateHeure' => 'ASC']
-        );
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
+        }
+
+        // Fetch upcoming appointments with patient loaded (optimized)
+        $appointments = $entityManager->getRepository(RendezVous::class)
+            ->findByMedecinWithPatient($medecin, 10);
+
+        // Fetch specialities for the edit profile modal
+        $specialities = $entityManager->getRepository(\App\Entity\Speciality::class)->findAll();
 
         return $this->render('medecin/dashboard.html.twig', [
-            'medecin' => $medecin,
-            'specialities' => $specialities,
-            'appointments' => $appointments
+            'appointments' => $appointments,
+            'specialities' => $specialities
         ]);
     }
 
     #[Route('/medecin/patients', name: 'app_medecin_patients')]
-    public function patients(EntityManagerInterface $em): Response
+    public function patients(EntityManagerInterface $entityManager): Response
     {
+        /** @var Medecin $medecin */
         $medecin = $this->getUser();
-        $patients = $em->getRepository(\App\Entity\Patient::class)->findPatientsByMedecin($medecin);
+
+        // Find all patients who have had appointments with this doctor
+        $patients = $entityManager->getRepository(Patient::class)->createQueryBuilder('p')
+            ->join('p.rendezVous', 'r')
+            ->where('r.medecin = :medecin')
+            ->setParameter('medecin', $medecin)
+            ->distinct()
+            ->orderBy('p.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        $patientsWithRdv = [];
+        $now = new \DateTime();
+
+        foreach ($patients as $patient) {
+            // Find next upcoming appointment
+            $nextRdv = $entityManager->getRepository(RendezVous::class)->createQueryBuilder('r')
+                ->where('r.patient = :patient')
+                ->andWhere('r.medecin = :medecin')
+                ->andWhere('r.dateHeure > :now')
+                ->andWhere('r.statut IN (:statuses)')
+                ->setParameter('patient', $patient)
+                ->setParameter('medecin', $medecin)
+                ->setParameter('now', $now)
+                ->setParameter('statuses', ['en_attente', 'confirme'])
+                ->orderBy('r.dateHeure', 'ASC')
+                ->setMaxResults(1)
+                ->getQuery()
+                ->getOneOrNullResult();
+
+            $patientsWithRdv[] = [
+                'patient' => $patient,
+                'nextRdv' => $nextRdv
+            ];
+        }
 
         return $this->render('medecin/patients.html.twig', [
-            'patients' => $patients
-        ]);
-    }
-
-
-
-    #[Route('/medecin/profil', name: 'app_medecin_profil')]
-    public function profil(EntityManagerInterface $em): Response
-    {
-        $medecin = $this->getUser();
-        $specialities = $em->getRepository(Speciality::class)->findAll();
-
-        return $this->render('medecin/profil.html.twig', [
-            'medecin' => $medecin,
-            'specialities' => $specialities,
+            'patientsWithRdv' => $patientsWithRdv
         ]);
     }
 
     #[Route('/medecin/edit-profile', name: 'app_medecin_edit_profile', methods: ['POST'])]
-    public function editProfile(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
-    {
-        /** @var \App\Entity\Medecin $medecin */
+    public function editProfile(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher
+    ): Response {
+        /** @var Medecin $medecin */
         $medecin = $this->getUser();
 
-        $data = $request->request->all();
+        $nom = $request->request->get('nom');
+        $prenom = $request->request->get('prenom');
+        $telephone = $request->request->get('telephone');
+        $email = $request->request->get('email');
+        $specialiteId = $request->request->get('specialite');
 
-        // Update personal information
-        if (isset($data['nom']) && !empty($data['nom'])) {
-            $medecin->setNom($data['nom']);
+        $currentPassword = $request->request->get('current_password');
+        $newPassword = $request->request->get('new_password');
+        $confirmPassword = $request->request->get('confirm_password');
+
+        if (!empty($nom)) {
+            $medecin->setNom($nom);
         }
-        if (isset($data['prenom']) && !empty($data['prenom'])) {
-            $medecin->setPrenom($data['prenom']);
+
+        if (!empty($prenom)) {
+            $medecin->setPrenom($prenom);
         }
-        if (isset($data['specialite']) && !empty($data['specialite'])) {
-            $speciality = $entityManager->getRepository(Speciality::class)->find($data['specialite']);
-            if ($speciality) {
-                $medecin->setSpecialite($speciality);
+
+        if (!empty($telephone)) {
+            $medecin->setTelephone($telephone);
+        }
+
+        if (!empty($email)) {
+            $medecin->setEmail($email);
+        }
+
+        if (!empty($specialiteId)) {
+            $specialite = $entityManager->getRepository(\App\Entity\Speciality::class)->find($specialiteId);
+            if ($specialite) {
+                $medecin->setSpecialite($specialite);
             }
         }
-        if (isset($data['email']) && !empty($data['email'])) {
-            $medecin->setEmail($data['email']);
-        }
-        if (isset($data['telephone']) && !empty($data['telephone'])) {
-            $medecin->setTelephone($data['telephone']);
-        }
 
-        // Update password if provided
-        if (!empty($data['current_password']) && !empty($data['new_password'])) {
-            // Verify current password
-            if ($passwordHasher->isPasswordValid($medecin, $data['current_password'])) {
-                if ($data['new_password'] === $data['confirm_password']) {
-                    $hashedPassword = $passwordHasher->hashPassword($medecin, $data['new_password']);
+        // Handle password change
+        if (!empty($currentPassword) && !empty($newPassword)) {
+            if ($passwordHasher->isPasswordValid($medecin, $currentPassword)) {
+                if ($newPassword === $confirmPassword) {
+                    $hashedPassword = $passwordHasher->hashPassword($medecin, $newPassword);
                     $medecin->setPassword($hashedPassword);
                 } else {
                     $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
@@ -110,96 +150,111 @@ class MedecinController extends AbstractController
         return $this->redirectToRoute('app_medecin_dashboard');
     }
 
-    #[Route('/medecin/availability/add', name: 'app_medecin_add_availability', methods: ['POST'])]
-    public function addAvailability(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    #[Route('/medecin/disponibilites', name: 'app_medecin_disponibilites')]
+    public function disponibilites(Request $request, EntityManagerInterface $em): Response
     {
-        /** @var \App\Entity\Medecin $medecin */
+        /** @var Medecin $medecin */
         $medecin = $this->getUser();
 
-        $data = json_decode($request->getContent(), true);
+        // Créer le formulaire
+        $disponibilite = new Disponibilite();
+        $disponibilite->setMedecin($medecin);
+        $form = $this->createForm(DisponibiliteType::class, $disponibilite);
+
+        // Gérer la soumission
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                // Récupérer les données du formulaire
+                $date = $form->get('date')->getData();
+                $heureDebut = $form->get('heureDebut')->getData();
+                $heureFin = $form->get('heureFin')->getData();
+
+                // VALIDATION: Date ne peut pas être dans le passé (sécurité serveur)
+                $today = new \DateTime('today');
+                if ($date < $today) {
+                    $this->addFlash('error', 'Vous ne pouvez pas créer de disponibilités dans le passé');
+                    return $this->redirectToRoute('app_medecin_disponibilites');
+                }
+
+                // Créer DateTime de début et fin de plage
+                $dateDebut = new \DateTime($date->format('Y-m-d') . ' ' . $heureDebut->format('H:i'));
+                $dateFin = new \DateTime($date->format('Y-m-d') . ' ' . $heureFin->format('H:i'));
+
+                // Vérifier que fin > début
+                if ($dateFin <= $dateDebut) {
+                    $this->addFlash('error', 'L\'heure de fin doit être après l\'heure de début');
+                    return $this->redirectToRoute('app_medecin_disponibilites');
+                }
+
+                $createdCount = 0;
+
+                // Créer les créneaux de 40 minutes
+                $currentStart = clone $dateDebut;
+                while ($currentStart < $dateFin) {
+                    $currentEnd = clone $currentStart;
+                    $currentEnd->modify('+40 minutes');
+
+                    // Ne pas dépasser la fin de plage
+                    if ($currentEnd > $dateFin) {
+                        break;
+                    }
+
+                    // Créer le créneau
+                    $dispo = new Disponibilite();
+                    $dispo->setMedecin($medecin);
+                    $dispo->setDateDebut(clone $currentStart);
+                    $dispo->setDateFin(clone $currentEnd);
+                    $dispo->setEstDisponible(true);
+
+                    $em->persist($dispo);
+                    $createdCount++;
+
+                    // Passer au créneau suivant
+                    $currentStart = clone $currentEnd;
+                }
+
+                // Sauvegarder tout
+                $em->flush();
+
+                $this->addFlash('success', "{$createdCount} créneau(x) créé(s) avec succès");
+                return $this->redirectToRoute('app_medecin_disponibilites');
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur: ' . $e->getMessage());
+            }
+        }
+
+        // Récupérer les disponibilités
+        $disponibilites = $em->getRepository(Disponibilite::class)
+            ->findByMedecinSorted($medecin);
+
+        return $this->render('medecin/disponibilites.html.twig', [
+            'disponibilites' => $disponibilites,
+            'form' => $form->createView()
+        ]);
+    }
+
+    #[Route('/medecin/disponibilites/{id}/delete', name: 'app_medecin_disponibilite_delete', methods: ['POST'])]
+    public function deleteDisponibilite(Disponibilite $disponibilite, EntityManagerInterface $em): Response
+    {
+        /** @var Medecin $medecin */
+        $medecin = $this->getUser();
+
+        // Vérifier que la disponibilité appartient bien au médecin
+        if ($disponibilite->getMedecin() !== $medecin) {
+            throw $this->createAccessDeniedException();
+        }
 
         try {
-            $disponibilite = new Disponibilite();
-            $disponibilite->setMedecin($medecin);
+            $repository = $em->getRepository(Disponibilite::class);
+            $repository->remove($disponibilite, true);
 
-            $date = new \DateTime($data['date']);
-            $heureDebut = \DateTime::createFromFormat('H:i', $data['heure_debut']);
-            $heureFin = \DateTime::createFromFormat('H:i', $data['heure_fin']);
-
-            $dateDebut = clone $date;
-            $dateDebut->setTime((int) $heureDebut->format('H'), (int) $heureDebut->format('i'));
-
-            $dateFin = clone $date;
-            $dateFin->setTime((int) $heureFin->format('H'), (int) $heureFin->format('i'));
-
-            $disponibilite->setDateDebut($dateDebut);
-            $disponibilite->setDateFin($dateFin);
-
-            $entityManager->persist($disponibilite);
-            $entityManager->flush();
-
-            return new JsonResponse([
-                'success' => true,
-                'message' => 'Disponibilité ajoutée avec succès',
-                'data' => [
-                    'id' => $disponibilite->getId(),
-                    'date' => $date->format('Y-m-d'),
-                    'heure_debut' => $heureDebut->format('H:i'),
-                    'heure_fin' => $heureFin->format('H:i')
-                ]
-            ]);
+            $this->addFlash('success', 'Disponibilité supprimée avec succès');
         } catch (\Exception $e) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'Erreur: ' . $e->getMessage()
-            ], 400);
-        }
-    }
-
-    #[Route('/medecin/availability/list', name: 'app_medecin_list_availabilities', methods: ['GET'])]
-    public function listAvailabilities(EntityManagerInterface $entityManager): JsonResponse
-    {
-        /** @var \App\Entity\Medecin $medecin */
-        $medecin = $this->getUser();
-
-        $disponibilites = $entityManager->getRepository(Disponibilite::class)
-            ->findBy(['medecin' => $medecin], ['dateDebut' => 'ASC']);
-
-        $data = [];
-        foreach ($disponibilites as $dispo) {
-            $data[] = [
-                'id' => $dispo->getId(),
-                'date' => $dispo->getDateDebut()->format('Y-m-d'),
-                'heure_debut' => $dispo->getDateDebut()->format('H:i'),
-                'heure_fin' => $dispo->getDateFin()->format('H:i'),
-                'disponible' => $dispo->isEstDisponible()
-            ];
+            $this->addFlash('error', 'Erreur lors de la suppression: ' . $e->getMessage());
         }
 
-        return new JsonResponse(['data' => $data]);
-    }
-
-    #[Route('/medecin/availability/delete/{id}', name: 'app_medecin_delete_availability', methods: ['DELETE'])]
-    public function deleteAvailability(int $id, EntityManagerInterface $entityManager): JsonResponse
-    {
-        /** @var \App\Entity\Medecin $medecin */
-        $medecin = $this->getUser();
-
-        $disponibilite = $entityManager->getRepository(Disponibilite::class)->find($id);
-
-        if (!$disponibilite || $disponibilite->getMedecin() !== $medecin) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'Disponibilité non trouvée'
-            ], 404);
-        }
-
-        $entityManager->remove($disponibilite);
-        $entityManager->flush();
-
-        return new JsonResponse([
-            'success' => true,
-            'message' => 'Disponibilité supprimée'
-        ]);
+        return $this->redirectToRoute('app_medecin_disponibilites');
     }
 }

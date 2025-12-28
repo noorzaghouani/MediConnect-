@@ -19,6 +19,13 @@
             <p class="subtitle">Rejoignez notre plateforme de téléconsultation médicale</p>
         </div>
 
+        {# Flash Messages #}
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
         {{ form_start(registrationForm, {'attr': {'class': 'register-form'}}) }}
             <!-- Type de compte -->
             <div class="form-group full-width">
@@ -49,7 +56,7 @@
                     </label>
                     <div class="file-name" id="file-name"></div>
                 </div>
-                <p style="color: #94a3b8; font-size: 12px; margin-top: 6px;">Formats acceptés : PDF, JPG, PNG (max 5 Mo)</p>
+                <p class="form-hint">Formats acceptés : PDF, JPG, PNG (max 5 Mo)</p>
                 {{ form_errors(registrationForm.diplome) }}
             </div>
 

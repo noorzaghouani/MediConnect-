@@ -59,4 +59,33 @@ class PatientRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Trouve les patients qui ont au moins une consultation avec le médecin
+     * (pour créer une ordonnance)
+     */
+    public function findPatientsWithConsultationsByMedecin($medecin)
+    {
+        return $this->createQueryBuilder('p')
+            ->join('p.dossierMedical', 'dm')
+            ->join('dm.consultations', 'c')
+            ->where('c.medecin = :medecin')
+            ->setParameter('medecin', $medecin)
+            ->distinct()
+            ->orderBy('p.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+    public function searchByTerm(string $term): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.nom LIKE :term')
+            ->orWhere('p.prenom LIKE :term')
+            ->orWhere('p.email LIKE :term')
+            ->orWhere('p.telephone LIKE :term')
+            ->setParameter('term', '%' . $term . '%')
+            ->orderBy('p.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

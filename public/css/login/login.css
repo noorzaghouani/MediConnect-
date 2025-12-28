@@ -1,6 +1,6 @@
 :root {
-    --primary-color: #17a2b8;
-    --primary-dark: #138496;
+    --primary-color: #0D9488;
+    --primary-dark: #0D7B73;
     --secondary-color: #0a2540;
     --text-color: #333;
     --light-bg: #f8f9fa;
@@ -147,7 +147,7 @@ body {
 .form-group input:focus {
     border-color: var(--primary-color);
     background: var(--white);
-    box-shadow: 0 0 0 4px rgba(23, 162, 184, 0.1);
+    box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
 }
 
 .password-input {

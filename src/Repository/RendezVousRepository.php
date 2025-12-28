@@ -19,6 +19,22 @@ class RendezVousRepository extends ServiceEntityRepository
     }
 
     /**
+     * Trouve les rendez-vous d'un médecin avec le patient chargé (évite N+1 queries)
+     */
+    public function findByMedecinWithPatient(Medecin $medecin, int $limit = 10): array
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.patient', 'p')
+            ->addSelect('p')
+            ->where('r.medecin = :medecin')
+            ->setParameter('medecin', $medecin)
+            ->orderBy('r.dateHeure', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Trouve les rendez-vous d'un patient
      */
     public function findByPatient($patient)
@@ -174,6 +190,31 @@ class RendezVousRepository extends ServiceEntityRepository
             ->andWhere('r.statut = :attente')
             ->setParameter('now', new \DateTime())
             ->setParameter('attente', RendezVous::STATUT_ATTENTE)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Trouve les rendez-vous d'un médecin avec tri personnalisé
+     * Les rendez-vous annulés sont placés à la fin
+     * Ordre: en_attente -> confirme -> termine -> annule
+     */
+    public function findByMedecinSorted(Medecin $medecin): array
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.medecin = :medecin')
+            ->setParameter('medecin', $medecin)
+            ->addOrderBy(
+                "CASE 
+                    WHEN r.statut = 'en_attente' THEN 1 
+                    WHEN r.statut = 'confirme' THEN 2 
+                    WHEN r.statut = 'termine' THEN 3 
+                    WHEN r.statut = 'annule' THEN 4 
+                    ELSE 5 
+                END",
+                'ASC'
+            )
+            ->addOrderBy('r.dateHeure', 'ASC')
             ->getQuery()
             ->getResult();
     }

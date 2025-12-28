@@ -1,0 +1,174 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Disponibilités - MediConnect{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/medecin/medecin_dashboard.css') }}">
+
+{% endblock %}
+
+{% block custom_styles %}{% endblock %}
+
+{% block body %}
+    {% include 'medecin/_sidebar.html.twig' %}
+
+    <main class="main-content">
+        <header class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-calendar-alt"></i> Mes Disponibilités</h1>
+                <p>Gérez vos créneaux de disponibilité pour les rendez-vous</p>
+            </div>
+            <div class="header-right">
+                <a href="{{ path('app_medecin_dashboard') }}" class="header-btn btn-secondary">
+                    <i class="fas fa-home"></i> Accueil
+                </a>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('warning') %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('info') %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        <!-- Formulaire d'ajout -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="fas fa-plus-circle"></i> Ajouter une disponibilité
+                </h2>
+            </div>
+            <div class="panel-body">
+                {{ form_start(form, {'attr': {'class': 'availability-form'}}) }}
+                    <div class="form-row">
+                        <div class="form-group">
+                            {{ form_label(form.date) }}
+                            {{ form_widget(form.date) }}
+                            {{ form_errors(form.date) }}
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.heureDebut) }}
+                            {{ form_widget(form.heureDebut) }}
+                            {{ form_errors(form.heureDebut) }}
+                            <small class="text-muted">Ex: 09:00</small>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.heureFin) }}
+                            {{ form_widget(form.heureFin) }}
+                            {{ form_errors(form.heureFin) }}
+                            <small class="text-muted">Ex: 17:40</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            {{ form_widget(form.submit) }}
+                        </div>
+                    </div>
+                {{ form_end(form) }}
+                
+
+            </div>
+        </div>
+
+        <!-- Liste des disponibilités -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="fas fa-list"></i> Mes disponibilités enregistrées
+                </h2>
+                <span class="badge-count">{{ disponibilites|length }} disponibilité(s)</span>
+            </div>
+
+            {% if disponibilites is empty %}
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <p>Aucune disponibilité enregistrée.</p>
+                    <p class="small">Ajoutez vos créneaux de disponibilité ci-dessus.</p>
+                </div>
+            {% else %}
+                {% set joursFr = {
+                    'Monday': 'Lundi',
+                    'Tuesday': 'Mardi', 
+                    'Wednesday': 'Mercredi',
+                    'Thursday': 'Jeudi',
+                    'Friday': 'Vendredi',
+                    'Saturday': 'Samedi',
+                    'Sunday': 'Dimanche'
+                } %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3 ps-4"><i class="fas fa-calendar"></i> Date</th>
+                                <th class="py-3"><i class="fas fa-clock"></i> Horaires</th>
+                                <th class="py-3"><i class="fas fa-info-circle"></i> Statut</th>
+                                <th class="py-3 text-end pe-4"><i class="fas fa-cog"></i> Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for dispo in disponibilites %}
+                                <tr>
+                                    <td class="ps-4">
+                                        <strong>{{ dispo.dateDebut|date('d/m/Y') }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ joursFr[dispo.dateDebut|date('l')] }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ dispo.dateDebut|date('H:i') }} - {{ dispo.dateFin|date('H:i') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if dispo.estDisponible %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> Disponible
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-ban"></i> Réservé
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        {% if dispo.estDisponible %}
+                                            <form method="POST" action="{{ path('app_medecin_disponibilite_delete', {id: dispo.id}) }}" class="inline-form" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?');">
+                                                <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span class="text-muted small">
+                                                <i class="fas fa-lock"></i> Réservé
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+{% endblock %}

@@ -1,61 +1,17 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Patient - MediConnect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Patient - MediConnect{% endblock %}
+
+{% block stylesheets %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/patient/patient_dashboard.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/patient/modal.css') }}">
-</head>
-<body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="logo-section">
-            <div class="logo-icon">
-                ⚕️
-            </div>
-            <div class="logo-text">MediConnect</div>
-        </div>
+    <link rel="stylesheet" href="{{ asset('css/patient/patient_dashboard.css') }}?v=1">
+    <link rel="stylesheet" href="{{ asset('css/common/modal.css') }}?v=1">
+{% endblock %}
 
-        <div class="patient-profile">
-            <div class="patient-avatar">
-                <i class="fas fa-user"></i>
-            </div>
-            <div class="patient-name">{{ app.user.prenom }} {{ app.user.nom }}</div>
-            <div class="patient-role">Patient</div>
-        </div>
+{% block custom_styles %}{% endblock %}
 
-        <nav>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="#" class="nav-link active">
-                        <i class="fas fa-search"></i>
-                        <span>Chercher Médecin</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-calendar-plus"></i>
-                        <span>Prendre RDV</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-folder-open"></i>
-                        <span>Mon Dossier Médical</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-file-prescription"></i>
-                        <span>Mes Ordonnances</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
+{% block body %}
+    {% include 'patient/_sidebar.html.twig' %}
 
     <!-- Main Content -->
     <main class="main-content">
@@ -63,10 +19,10 @@
         <header class="header">
             <div class="header-left">
                 <h1>Bienvenue, {{ app.user.prenom }}</h1>
-                <p class="header-date">jeudi 4 décembre 2025</p>
+                <p class="header-date">{{ "now"|date("l d F Y", "Europe/Paris") }}</p>
             </div>
             <div class="header-right">
-                <button class="header-btn btn-primary">
+                <button class="header-btn btn-primary" id="editProfileBtn">
                     <i class="fas fa-user-edit"></i>
                     Éditer Profil
                 </button>
@@ -140,17 +96,17 @@
             </div>
 
             {% if lastDoctor %}
-                <div class="suggestion-box" style="margin-top: 20px; background: #f0fdf9; border: 1px solid #ccfbf1; padding: 15px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 15px;">
-                        <div style="background: #0d9488; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <div class="suggestion-box">
+                    <div class="suggestion-content">
+                        <div class="suggestion-icon">
                             <i class="fas fa-history"></i>
                         </div>
-                        <div>
-                            <h4 style="margin: 0; color: #0f172a;">Reprendre rendez-vous ?</h4>
-                            <p style="margin: 0; color: #64748b; font-size: 0.9em;">Dr. {{ lastDoctor.prenom }} {{ lastDoctor.nom }} ({{ lastDoctor.specialite.nom }})</p>
+                        <div class="suggestion-text">
+                            <h4>Reprendre rendez-vous ?</h4>
+                            <p>Dr. {{ lastDoctor.prenom }} {{ lastDoctor.nom }} ({{ lastDoctor.specialite.nom }})</p>
                         </div>
                     </div>
-                    <button class="btn-search" onclick="showAvailabilityModal({{ lastDoctor.id }}, 'Dr. {{ lastDoctor.prenom }} {{ lastDoctor.nom }}')" style="width: auto; padding: 8px 15px;">
+                    <button class="btn-search suggestion-btn" data-doctor-id="{{ lastDoctor.id }}" data-doctor-name="Dr. {{ lastDoctor.prenom }} {{ lastDoctor.nom }}">
                         <i class="fas fa-calendar-plus"></i> Réserver
                     </button>
                 </div>
@@ -169,8 +125,8 @@
             <div class="appointments-list">
                 {% if appointments is empty %}
                     <div class="no-appointments">
-                        <i class="fas fa-calendar-check" style="font-size: 2rem; color: #cbd5e1;"></i>
-                        <p style="color: #64748b; margin-top: 10px;">Aucun rendez-vous prévu.</p>
+                        <i class="fas fa-calendar-check"></i>
+                        <p>Aucun rendez-vous prévu.</p>
                     </div>
                 {% else %}
                     {% for rdv in appointments %}
@@ -192,15 +148,17 @@
                                         <span class="status-badge confirmed">Confirmé</span>
                                     {% elseif rdv.statut == 'en_attente' %}
                                         <span class="status-badge pending">En Attente</span>
+                                    {% elseif rdv.statut == 'termine' %}
+                                        <span class="status-badge completed">Terminé</span>
                                     {% elseif rdv.statut == 'annule' %}
-                                        <span class="status-badge cancelled" style="background: #fee2e2; color: #dc2626;">Annulé</span>
+                                        <span class="status-badge cancelled">Annulé</span>
                                     {% else %}
                                         <span class="status-badge">{{ rdv.statut }}</span>
                                     {% endif %}
                                 </div>
                             </div>
                             <div class="appointment-actions">
-                                <button class="action-btn btn-details" onclick="alert('Détails bientôt disponibles')">
+                                <button class="action-btn btn-details">
                                     <i class="fas fa-info-circle"></i>
                                     Détails
                                 </button>
@@ -244,22 +202,22 @@
                     <div class="form-fields-gray">
                         <div class="field-horizontal">
                             <label class="field-label-left">Nom</label>
-                            <input type="text" name="nom" class="field-input-right" value="{{ app.user.nom }}" placeholder="">
+                            <input type="text" name="nom" class="field-input-right" value="{{ app.user.nom }}">
                         </div>
 
                         <div class="field-horizontal">
                             <label class="field-label-left">Prénom</label>
-                            <input type="text" name="prenom" class="field-input-right" value="{{ app.user.prenom }}" placeholder="">
+                            <input type="text" name="prenom" class="field-input-right" value="{{ app.user.prenom }}">
                         </div>
 
                         <div class="field-horizontal">
                             <label class="field-label-left">Téléphone</label>
-                            <input type="tel" name="telephone" class="field-input-right" value="{{ app.user.telephone }}" placeholder="">
+                            <input type="tel" name="telephone" class="field-input-right" value="{{ app.user.telephone }}">
                         </div>
                     </div>
 
                     <!-- Section: Changer Mot de Passe -->
-                    <div class="section-header-teal" style="margin-top: 25px;">
+                    <div class="section-header-teal">
                         <i class="fas fa-key"></i>
                         <span>Changer Mot de Passe</span>
                     </div>
@@ -294,7 +252,8 @@
             </div>
         </div>
     </div>
+{% endblock %}
 
-    <script src="{{ asset('js/patient/patient_dashboard.js') }}"></script>
-</body>
-</html>
+{% block javascripts %}
+    <script src="{{ asset('js/patient/patient_dashboard.js') }}?v=1"></script>
+{% endblock %}

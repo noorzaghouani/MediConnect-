@@ -32,9 +32,6 @@ class RendezVous
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $dateHeure = null;
 
-    #[ORM\Column(type: 'datetime')]
-    private ?\DateTimeInterface $date = null;
-
     #[ORM\Column(type: 'string', length: 20)]
     private string $statut = self::STATUT_ATTENTE;
 
@@ -47,7 +44,8 @@ class RendezVous
     #[ORM\Column(type: 'integer', options: ['default' => 30])]
     private int $duree = 30; // Durée en minutes
 
-    #[ORM\OneToOne(targetEntity: 'App\Entity\Consultation', mappedBy: 'rendezVous')]
+    #[ORM\OneToOne(targetEntity: 'App\Entity\Consultation', inversedBy: 'rendezVous')]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Consultation $consultation = null;
 
 
@@ -246,14 +244,15 @@ class RendezVous
     {
         return $this->dateHeure->format('d/m/Y à H:i');
     }
-    public function getDate(): ?\DateTimeInterface
+
+    public function getConsultation(): ?Consultation
     {
-        return $this->date;
+        return $this->consultation;
     }
 
-    public function setDate(\DateTimeInterface $date): self
+    public function setConsultation(?Consultation $consultation): self
     {
-        $this->date = $date;
+        $this->consultation = $consultation;
         return $this;
     }
     // Méthode pour vérifier si le RDV est aujourd'hui

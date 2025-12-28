@@ -1,54 +1,192 @@
-{% extends 'base.html.twig' %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques - MediConnect</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Hybrid Admin Styles -->
+    <link rel="stylesheet" href="{{ asset('css/admin/dashboardadmin.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/profile_modal.css') }}">
+    
 
-{% block title %}Dashboard Admin - MediConnect{% endblock %}
+</head>
+<body>
 
-{% block body %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <h1 class="mt-4 mb-4">Dashboard Administrateur</h1>
-            <p class="lead">Page en construction - MediConnect</p>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo-section">
+            <div class="logo-icon">
+                ⚕️
+            </div>
+            <span class="logo-text">MediConnect</span>
+        </div>
+
+        <div class="patient-profile">
+            <div class="patient-avatar">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <h3 class="patient-name">Admin Principal</h3>
+            <p class="patient-role">Administrateur</p>
+        </div>
+
+        <nav>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_dashboard') }}" class="nav-link active">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Statistiques</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_demandes') }}" class="nav-link">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Demandes</span>
+                        {% if medecinsNonVerifies|length > 0 %}
+                            <span class="notification-badge">{{ medecinsNonVerifies|length }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_medecins') }}" class="nav-link">
+                        <i class="fas fa-user-md"></i>
+                        <span>Médecin</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_patients') }}" class="nav-link">
+                        <i class="fas fa-user-injured"></i>
+                        <span>Patient</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <h1>MediConnect Admin</h1>
+            </div>
+            <div class="header-right">
+                <button class="header-btn btn-edit-profile">
+                    <i class="fas fa-user-edit"></i>
+                    Éditer Profil
+                </button>
+                <a href="{{ path('app_logout') }}" class="header-btn btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Déconnexion
+                </a>
+            </div>
+        </header>
+
+        <!-- DASHBOARD CONTENT -->
+        
+        <!-- Flash Messages -->
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> {{ message }}
+            </div>
+        {% endfor %}
+
+        <!-- Stats Grid (KPIs) -->
+        <h2 class="stats-heading">Analyse & Statistiques</h2>
+        <div class="stats-grid">
+            <!-- Card 1: Patients -->
+            <div class="stat-card">
+                <div class="stat-icon-box icon-blue">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">Total Patients</span>
+                    <span class="stat-value">{{ nbPatients|number_format(0, ',', ' ') }}</span>
+                </div>
+            </div>
             
-            <div class="alert alert-info">
-                <strong>Bienvenue Admin!</strong> Vous êtes connecté en tant qu'administrateur.
-            </div>
-
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Utilisateurs</h5>
-                            <p class="card-text">Gérer les utilisateurs de la plateforme</p>
-                            <a href="#" class="btn btn-primary">Voir</a>
-                        </div>
-                    </div>
+            <!-- Card 2: Médecins -->
+            <div class="stat-card">
+                <div class="stat-icon-box icon-green">
+                    <i class="fas fa-user-md"></i>
                 </div>
-
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Médecins</h5>
-                            <p class="card-text">Gérer les médecins et leurs spécialités</p>
-                            <a href="#" class="btn btn-primary">Voir</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">Consultations</h5>
-                            <p class="card-text">Surveiller les consultations</p>
-                            <a href="#" class="btn btn-primary">Voir</a>
-                        </div>
-                    </div>
+                <div class="stat-content">
+                    <span class="stat-label">Total Médecins</span>
+                    <span class="stat-value">{{ nbMedecins|number_format(0, ',', ' ') }}</span>
                 </div>
             </div>
+            
+            <!-- Card 3: Consultations -->
+            <div class="stat-card">
+                <div class="stat-icon-box icon-orange">
+                    <i class="fas fa-file-medical-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-label">Total Consultations</span>
+                    <span class="stat-value">{{ nbConsultations|number_format(0, ',', ' ') }}</span>
+                </div>
+            </div>
+            
+            <!-- Card 4: Demandes (Link to new page) -->
+            <a href="{{ path('app_admin_demandes') }}" class="link-no-style">
+                <div class="stat-card clickable-card">
+                    <div class="stat-icon-box icon-red">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Demandes en attente</span>
+                        <span class="stat-value">{{ medecinsNonVerifies|length }}</span>
+                    </div>
+                    {% if medecinsNonVerifies|length > 0 %}
+                    <i class="fas fa-arrow-right arrow-icon-red"></i>
+                    {% endif %}
+                </div>
+            </a>
+        </div>
 
-            <div class="mt-4">
-                <a href="{{ path('app_logout') }}" class="btn btn-danger">Se déconnecter</a>
+        <!-- NEW CHARTS SECTION (V2 Design) -->
+        <div class="charts-container">
+            <!-- Line Chart: TODAY'S ACTIVITY (HOURLY) -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <i class="fas fa-clock chart-icon"></i>
+                        Consultations du Jour
+                    </div>
+                    <div class="chart-subtitle">Activité temps réel (08h - 18h)</div>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="lineChart" data-consultations="{{ consultationsParHeure|json_encode|e('html_attr') }}"></canvas>
+                </div>
+            </div>
+
+            <!-- Doughnut Chart: COLORFUL -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">
+                        <i class="fas fa-briefcase-medical chart-icon"></i>
+                        Répartition Spécialités
+                    </div>
+                    <div class="chart-subtitle">Médecins vérifiés</div>
+                </div>
+                <div class="canvas-container">
+                    <canvas id="doughnutChart" data-repartition="{{ repartitionSpecialites|json_encode|e('html_attr') }}"></canvas>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-{% endblock %}
+        
+    </main>
+
+    <!-- ADMIN PROFILE MODAL -->
+    {% include 'admin/_profile_modal.html.twig' %}
+
+    <!-- External Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('js/admin/dashboard_stats.js') }}"></script>
+    <script src="{{ asset('js/admin/profile_modal.js') }}"></script>
+</body>
+</html>

@@ -26,6 +26,19 @@ class RegistrationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
 
+            // Vérifier si l'email existe déjà
+            $existingUser = $entityManager->getRepository(Patient::class)->findOneBy(['email' => $data['email']]);
+            if (!$existingUser) {
+                $existingUser = $entityManager->getRepository(Medecin::class)->findOneBy(['email' => $data['email']]);
+            }
+
+            if ($existingUser) {
+                $this->addFlash('error', 'Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.');
+                return $this->render('registration/register.html.twig', [
+                    'registrationForm' => $form->createView(),
+                ]);
+            }
+
             // Créer l'utilisateur selon le type
             if ($data['role'] === 'medecin') {
                 $user = new Medecin();

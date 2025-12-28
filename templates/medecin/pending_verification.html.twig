@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérification en attente{% endblock %}
+
+{% block body %}
+    <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+        <div style="max-width: 500px; padding: 40px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 64px; margin-bottom: 24px;">⏳</div>
+            <h1 style="color: #1e293b; margin-bottom: 16px;">Vérification en cours</h1>
+            <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin-bottom: 32px;">
+                Votre compte médecin a été créé avec succès, mais il doit être validé par un administrateur.
+                <br><br>
+                L'administrateur vérifiera votre diplôme et validera votre inscription sous peu.
+                Vous recevrez un email une fois votre compte activé.
+            </p>
+            <a href="{{ path('app_logout') }}" class="btn btn-secondary">Se déconnecter</a>
+        </div>
+    </div>
+{% endblock %}

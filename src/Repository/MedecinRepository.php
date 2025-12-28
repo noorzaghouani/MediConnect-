@@ -50,5 +50,21 @@ class MedecinRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+    /**
+     * Finds doctors by a single search term matching name, firstname or specialty
+     */
+    public function searchByTerm(string $term): array
+    {
+        return $this->createQueryBuilder('m')
+            ->leftJoin('m.specialite', 's')
+            ->where('LOWER(m.nom) LIKE LOWER(:term)')
+            ->orWhere('LOWER(m.prenom) LIKE LOWER(:term)')
+            ->orWhere('LOWER(m.email) LIKE LOWER(:term)')
+            ->orWhere('LOWER(s.nom) LIKE LOWER(:term)')
+            ->orderBy('m.nom', 'ASC')
+            ->setParameter('term', '%' . $term . '%')
+            ->getQuery()
+            ->getResult();
+    }
 }
 

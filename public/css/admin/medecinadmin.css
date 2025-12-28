@@ -1,0 +1,171 @@
+/* Specific Styles for Doctor List Page */
+.page-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 8px 15px;
+    width: 300px;
+    box-shadow: var(--shadow-sm);
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    margin-left: 10px;
+    width: 100%;
+    font-size: 14px;
+    color: var(--gray-700);
+}
+
+/* Modal Styles (Teal Design) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-card {
+    background: white;
+    border-radius: 12px;
+    width: 600px;
+    box-shadow: var(--shadow-xl);
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+.modal-header {
+    background: #0D9488;
+    /* Exact Patient Modal Gradient */
+    padding: 15px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+}
+
+.modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.title-icon {
+    background: white;
+    color: #0d9488;
+    /* Match avatar color */
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.modal-body {
+    padding: 25px;
+}
+
+.section-title {
+    background: #0D9488;
+    /* Exact Patient Modal Gradient */
+    color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.info-container {
+    background-color: #f1f5f9;
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    align-items: center;
+    gap: 20px;
+}
+
+.label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-600);
+}
+
+.value-box {
+    background: white;
+    border: 1px solid var(--gray-300);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--gray-800);
+    width: 100%;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}

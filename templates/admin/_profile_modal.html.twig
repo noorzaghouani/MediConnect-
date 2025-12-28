@@ -1,0 +1,60 @@
+<!-- ADMIN PROFILE MODAL PARTIAL -->
+<div id="adminProfileModal" class="modal-overlay">
+    <div class="modal-card">
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="modal-title">
+                <div class="title-icon"><i class="fas fa-user-shield"></i></div>
+                <span>Éditer Profil & Sécurité</span>
+            </div>
+            <button type="button" class="btn-close" onclick="closeAdminProfile()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <form action="{{ path('app_admin_update_profile') }}" method="POST">
+                
+                <!-- Section: Personal Info -->
+                <div class="section-title">
+                    <i class="fas fa-user"></i> Informations Personnelles
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nom</label>
+                    <input type="text" name="nom" class="form-input" value="{{ app.user.nom }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Prénom</label>
+                    <input type="text" name="prenom" class="form-input" value="{{ app.user.prenom }}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Téléphone</label>
+                    <input type="text" name="telephone" class="form-input" value="{{ app.user.telephone }}">
+                </div>
+
+                <!-- Section: Security -->
+                <div class="section-title">
+                    <i class="fas fa-lock"></i> Sécurité
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nouveau mot de passe</label>
+                    <input type="password" name="new_password" class="form-input" placeholder="••••••••">
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="modal-footer-buttons">
+                    <button type="button" class="btn-cancel" onclick="closeAdminProfile()">Annuler</button>
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save icon-margin-right"></i> Enregistrer
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
