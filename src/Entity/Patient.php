@@ -19,8 +19,6 @@ class Patient extends User
     #[ORM\OneToMany(mappedBy: 'patient', targetEntity: Ordonnance::class)]
     private Collection $ordonnances;
 
-
-
     public function __construct()
     {
         parent::__construct();
@@ -97,13 +95,7 @@ class Patient extends User
 
     public function removeOrdonnance(Ordonnance $ordonnance): self
     {
-        if ($this->ordonnances->removeElement($ordonnance)) {
-            // Unset the owning side of the relation
-            if ($ordonnance->getPatient() === $this) {
-                // Note: setPatient requires Patient, so we reconsider the removal logic
-                // In Doctrine, removing from collection is sufficient
-            }
-        }
+        $this->ordonnances->removeElement($ordonnance);
 
         return $this;
     }

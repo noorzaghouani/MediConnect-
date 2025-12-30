@@ -46,7 +46,6 @@ class AdminController extends AbstractController
         // Récupérer toutes les spécialités pour le dropdown
         $specialites = $em->getRepository(Speciality::class)->findAll();
 
-        // Stats consultations par jour (7 derniers jours)
         // Répartition par spécialité (Optimisé pour Doughnut Chart)
         $repartitionSpecialites = $medecinRepo->createQueryBuilder('m')
             ->select('s.nom as specialite, COUNT(m.id) as total')
@@ -138,10 +137,6 @@ class AdminController extends AbstractController
         if (!$medecin) {
             throw $this->createNotFoundException('Médecin non trouvé');
         }
-
-        // Supprimer le fichier diplôme si existe (optionnel, mais propre)
-        // $filesystem = new Filesystem();
-        // $filesystem->remove($this->getParameter('diplomes_directory').'/'.$medecin->getDiplome());
 
         $em->remove($medecin);
         $em->flush();

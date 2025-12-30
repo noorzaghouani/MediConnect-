@@ -84,9 +84,17 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
+/* Logo Icon - Style comme Dashboard Médecin */
 .logo-icon {
-    font-size: 32px;
-    animation: pulse 2s ease-in-out infinite;
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #0d9488;
 }
 
 @keyframes pulse {
@@ -169,17 +177,19 @@ body {
     margin-bottom: 8px;
 }
 
-.nav-link {
+.nav-link,
+.nav-link:visited {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 14px 18px;
-    color: white;
+    color: rgba(255, 255, 255, 0.9) !important;
     text-decoration: none;
     border-radius: 12px;
     font-size: 15px;
     font-weight: 500;
-    transition: all 0.3s ease;
+    /* transition: all 0.3s ease; */
+    /* DÉSACTIVÉ - Pas d'animation */
     position: relative;
     overflow: hidden;
 }
@@ -193,7 +203,8 @@ body {
     width: 4px;
     background: white;
     transform: scaleY(0);
-    transition: transform 0.3s ease;
+    /* transition: transform 0.3s ease; */
+    /* DÉSACTIVÉ - Pas d'animation */
 }
 
 .nav-link:hover {

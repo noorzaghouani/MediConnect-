@@ -32,13 +32,6 @@ class Medecin extends User
     #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: Consultation::class)]
     private Collection $consultations;
 
-
-
-    /**
-     * @return Collection<int, Consultation>
-     */
-
-
     #[ORM\ManyToOne(targetEntity: Speciality::class)]
     #[ORM\JoinColumn(nullable: true)]
     private ?Speciality $specialite = null;

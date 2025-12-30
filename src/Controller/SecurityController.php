@@ -34,7 +34,7 @@ class SecurityController extends AbstractController
     {
         $user = $this->getUser();
         
-        // Redirection selon le rôle - AVEC LES BONS NOMS DE ROUTES
+        // Redirection selon le rôle
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return $this->redirectToRoute('app_admin_dashboard');
         }
