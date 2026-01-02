@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Command;
+namespace App\Command\Dev;
 
 use App\Entity\Disponibilite;
 use App\Repository\MedecinRepository;

@@ -201,8 +201,10 @@ body {
 }
 
 .btn-secondary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    transform: none;
+    box-shadow: none;
 }
 
 /* ===================================
@@ -292,16 +294,16 @@ body {
 }
 
 .action-btn {
-    padding: 8px 16px;
+    padding: 4px 10px;
     border: none;
-    border-radius: 8px;
-    font-size: 13px;
+    border-radius: 6px;
+    font-size: 11px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .btn-confirm {
@@ -315,12 +317,12 @@ body {
 }
 
 .btn-view {
-    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    background: linear-gradient(135deg, #f59e0b, #d97706);
     color: white;
 }
 
 .btn-view:hover {
-    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    background: linear-gradient(135deg, #d97706, #b45309);
     color: white;
 }
 

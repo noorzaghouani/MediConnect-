@@ -4,6 +4,10 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/common/variables.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/buttons.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/cards.css') }}">
     <link rel="stylesheet" href="{{ asset('css/patient/patient_dashboard.css') }}?v=1">
     <link rel="stylesheet" href="{{ asset('css/common/modal.css') }}?v=1">
 {% endblock %}
@@ -158,10 +162,6 @@
                                 </div>
                             </div>
                             <div class="appointment-actions">
-                                <button class="action-btn btn-details">
-                                    <i class="fas fa-info-circle"></i>
-                                    Détails
-                                </button>
                                 {% if rdv.statut != 'annule' and rdv.statut != 'termine' %}
                                     <button class="action-btn btn-cancel" data-id="{{ rdv.id }}">
                                         <i class="fas fa-times"></i>

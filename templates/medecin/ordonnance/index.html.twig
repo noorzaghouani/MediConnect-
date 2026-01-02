@@ -89,17 +89,19 @@
                                         </div>
                                     </td>
                                     <td class="text-end pe-4">
-                                        <a href="{{ path('app_medecin_ordonnance_show', {'id': ordonnance.id}) }}" class="action-btn btn-view me-2 no-decoration">
-                                            <i class="fas fa-eye"></i> Voir
-                                        </a>
-                                        <a href="{{ path('app_medecin_ordonnance_edit', {'id': ordonnance.id}) }}" class="action-btn btn-edit me-2 no-decoration">
-                                            <i class="fas fa-edit"></i> Modifier
-                                        </a>
-                                        <form method="POST" action="{{ path('app_medecin_ordonnance_delete', {'id': ordonnance.id}) }}" class="inline-form" onsubmit="return confirm('Supprimer cette ordonnance?');">
-                                            <button type="submit" class="action-btn btn-delete">
-                                                <i class="fas fa-trash"></i> Supprimer
-                                            </button>
-                                        </form>
+                                        <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+                                            <a href="{{ path('app_medecin_ordonnance_show', {'id': ordonnance.id}) }}" class="action-btn btn-view no-decoration">
+                                                <i class="fas fa-eye"></i> Voir
+                                            </a>
+                                            <a href="{{ path('app_medecin_ordonnance_edit', {'id': ordonnance.id}) }}" class="action-btn btn-edit no-decoration">
+                                                <i class="fas fa-edit"></i> Modifier
+                                            </a>
+                                            <form method="POST" action="{{ path('app_medecin_ordonnance_delete', {'id': ordonnance.id}) }}" class="inline-form" onsubmit="return confirm('Supprimer cette ordonnance?');" style="margin: 0;">
+                                                <button type="submit" class="action-btn btn-delete">
+                                                    <i class="fas fa-trash"></i> Supprimer
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             {% endfor %}

@@ -1,0 +1,152 @@
+/* ============================
+   STYLES SIDEBAR COMMUNS
+   Utilisés dans tous les dashboards
+   ============================ */
+
+.sidebar {
+    width: 280px;
+    background: var(--primary-teal);
+    color: white;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: var(--primary-teal);
+}
+
+.logo-text {
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* Profile Section */
+.patient-profile,
+.doctor-profile,
+.admin-profile {
+    text-align: center;
+    padding: 25px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    margin-bottom: 30px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.patient-profile:hover,
+.doctor-profile:hover,
+.admin-profile:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.patient-avatar,
+.doctor-avatar,
+.admin-avatar {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    color: var(--primary-teal);
+    font-size: 32px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.patient-name,
+.doctor-name,
+.admin-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.patient-role,
+.doctor-specialty,
+.admin-role {
+    font-size: 14px;
+    opacity: 0.9;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Navigation Menu */
+.nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    margin-bottom: 8px;
+}
+
+.nav-link,
+.nav-link:visited {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    color: rgba(255, 255, 255, 0.9) !important;
+    text-decoration: none;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.nav-link:hover,
+.nav-link.active,
+.nav-link:hover:visited,
+.nav-link.active:visited {
+    background: rgba(255, 255, 255, 0.2);
+    color: white !important;
+    transform: translateX(5px);
+}
+
+.nav-link i {
+    font-size: 18px;
+    width: 20px;
+    text-align: center;
+}
+
+.notification-badge {
+    background: var(--danger-red);
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: auto;
+}
+
