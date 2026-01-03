@@ -1,0 +1,14 @@
+/* ===================================
+   STYLES SPÉCIFIQUES - MES PATIENTS
+   =================================== */
+
+/* Bouton Dossier - Réduit et orange */
+.action-btn.btn-view {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: white;
+}
+
+.action-btn.btn-view:hover {
+    background: linear-gradient(135deg, #d97706, #b45309) !important;
+    transform: translateY(-1px);
+}

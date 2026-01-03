@@ -79,13 +79,33 @@ class DossierMedicalController extends AbstractController
 
             // Constantes vitales
             $consultation->setTension($request->request->get('tension'));
+
+            // Validation température
             $temperature = $request->request->get('temperature');
             if ($temperature) {
-                $consultation->setTemperature((float) $temperature);
+                $temp = (float) $temperature;
+                if ($temp < 30 || $temp > 45) {
+                    $this->addFlash('error', 'La température doit être entre 30° et 45°C');
+                    return $this->render('medecin/consultation/new.html.twig', [
+                        'patient' => $patient,
+                        'rendezVous' => $rendezVous
+                    ]);
+                }
+                $consultation->setTemperature($temp);
             }
+
+            // Validation fréquence cardiaque
             $frequenceCardiaque = $request->request->get('frequence_cardiaque');
             if ($frequenceCardiaque) {
-                $consultation->setFrequenceCardiaque((int) $frequenceCardiaque);
+                $fc = (int) $frequenceCardiaque;
+                if ($fc < 40 || $fc > 200) {
+                    $this->addFlash('error', 'La fréquence cardiaque doit être entre 40 et 200 bpm');
+                    return $this->render('medecin/consultation/new.html.twig', [
+                        'patient' => $patient,
+                        'rendezVous' => $rendezVous
+                    ]);
+                }
+                $consultation->setFrequenceCardiaque($fc);
             }
 
             $consultation->setDate(new \DateTime());

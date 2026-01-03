@@ -1,0 +1,134 @@
+{#
+    Composant Sidebar Réutilisable
+    
+    Paramètres disponibles:
+    - role: 'admin' | 'medecin' | 'patient'
+    - user: L'utilisateur connecté (app.user)
+    - current_route: La route actuelle pour l'activation du menu
+    - medecinsNonVerifiesCount: (optionnel) Nombre de médecins non vérifiés pour le badge admin
+#}
+
+<aside class="sidebar">
+    <div class="logo-section">
+        <div class="logo-icon">
+            ⚕️
+        </div>
+        <div class="logo-text">MediConnect</div>
+    </div>
+
+    {# Profile Section selon le rôle #}
+    {% if role == 'admin' %}
+        <div class="admin-profile">
+            <div class="admin-avatar">
+                <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="admin-name">Admin Principal</div>
+            <div class="admin-role">Administrateur</div>
+        </div>
+    {% elseif role == 'medecin' %}
+        <div class="doctor-profile">
+            <div class="doctor-avatar">
+                <i class="fas fa-user-md"></i>
+            </div>
+            <div class="doctor-name">Dr. {{ user.prenom }} {{ user.nom }}</div>
+            <div class="doctor-specialty">{{ user.specialite.nom|default('Médecin généraliste') }}</div>
+        </div>
+    {% elseif role == 'patient' %}
+        <div class="patient-profile">
+            <div class="patient-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <div class="patient-name">{{ user.prenom }} {{ user.nom }}</div>
+            <div class="patient-role">Patient</div>
+        </div>
+    {% endif %}
+
+    {# Navigation Menu selon le rôle #}
+    <nav>
+        <ul class="nav-menu">
+            {% if role == 'admin' %}
+                {# Menu Admin #}
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_dashboard') }}" class="nav-link {% if current_route == 'app_admin_dashboard' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Statistiques</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_demandes') }}" class="nav-link {% if current_route == 'app_admin_demandes' %}active{% endif %}">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span>Demandes</span>
+                        {% if medecinsNonVerifiesCount is defined and medecinsNonVerifiesCount > 0 %}
+                            <span class="notification-badge">{{ medecinsNonVerifiesCount }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_medecins') }}" class="nav-link {% if current_route == 'app_admin_medecins' %}active{% endif %}">
+                        <i class="fas fa-user-md"></i>
+                        <span>Médecins</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_patients') }}" class="nav-link {% if current_route == 'app_admin_patients' %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span>Patients</span>
+                    </a>
+                </li>
+            {% elseif role == 'medecin' %}
+                {# Menu Médecin #}
+                <li class="nav-item">
+                    <a href="{{ path('app_medecin_dashboard') }}" class="nav-link {% if current_route == 'app_medecin_dashboard' %}active{% endif %}" id="nav-appointments">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Mes Rendez-vous</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_medecin_disponibilites') }}" class="nav-link {% if current_route == 'app_medecin_disponibilites' %}active{% endif %}" id="nav-availability">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Mes Disponibilités</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_medecin_patients') }}" class="nav-link {% if current_route == 'app_medecin_patients' %}active{% endif %}" id="nav-patients">
+                        <i class="fas fa-users"></i>
+                        <span>Mes Patients</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_medecin_ordonnances') }}" class="nav-link {% if current_route starts with 'app_medecin_ordonnance' %}active{% endif %}" id="nav-prescriptions">
+                        <i class="fas fa-file-prescription"></i>
+                        <span>Ordonnances</span>
+                    </a>
+                </li>
+            {% elseif role == 'patient' %}
+                {# Menu Patient #}
+                <li class="nav-item">
+                    <a href="{{ path('app_patient_dashboard') }}" class="nav-link {% if current_route == 'app_patient_dashboard' %}active{% endif %}">
+                        <i class="fas fa-search"></i>
+                        <span>Chercher Médecin</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span>Prendre RDV</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_patient_mon_dossier_medical') }}" class="nav-link {% if current_route == 'app_patient_mon_dossier_medical' %}active{% endif %}">
+                        <i class="fas fa-folder-open"></i>
+                        <span>Mon Dossier Médical</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ path('app_patient_ordonnances') }}" class="nav-link {% if current_route == 'app_patient_ordonnances' %}active{% endif %}">
+                        <i class="fas fa-file-prescription"></i>
+                        <span>Mes Ordonnances</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</aside>
+

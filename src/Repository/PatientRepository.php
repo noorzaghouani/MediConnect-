@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Patient;
+use App\Entity\RendezVous;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -25,10 +26,11 @@ class PatientRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->join('p.rendezVous', 'r')
+            ->addSelect('r')  // Évite les requêtes N+1
             ->where('r.medecin = :medecin')
             ->andWhere('r.statut = :statut')
             ->setParameter('medecin', $medecin)
-            ->setParameter('statut', 'confirme')
+            ->setParameter('statut', RendezVous::STATUT_CONFIRME)  // Utilisation de la constante
             ->distinct()
             ->orderBy('p.nom', 'ASC')
             ->getQuery()
@@ -43,7 +45,9 @@ class PatientRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('p')
             ->join('p.dossierMedical', 'dm')
+            ->addSelect('dm')  // Évite les requêtes N+1
             ->join('dm.consultations', 'c')
+            ->addSelect('c')  // Évite les requêtes N+1
             ->where('c.medecin = :medecin')
             ->setParameter('medecin', $medecin)
             ->distinct()

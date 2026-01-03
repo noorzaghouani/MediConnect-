@@ -6,7 +6,7 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
-
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -27,6 +27,8 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: "L'email est obligatoire")]
+    #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide")]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -36,18 +38,47 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: "Le nom est obligatoire")]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: "Le nom doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le nom ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $nom = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: "Le prénom est obligatoire")]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: "Le prénom doit contenir au moins {{ limit }} caractères",
+        maxMessage: "Le prénom ne peut pas dépasser {{ limit }} caractères"
+    )]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: "Le téléphone est obligatoire")]
+    #[Assert\Regex(
+        pattern: "/^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/",
+        message: "Le numéro de téléphone n'est pas valide (format français attendu)"
+    )]
     private ?string $telephone = null;
 
     #[ORM\Column(length: 10)]
+    #[Assert\NotBlank(message: "Le genre est obligatoire")]
+    #[Assert\Choice(
+        choices: ['homme', 'femme'],
+        message: "Veuillez choisir un genre valide"
+    )]
     private ?string $genre = null;
 
     #[ORM\Column(type: 'date')]
+    #[Assert\NotNull(message: "La date de naissance est obligatoire")]
+    #[Assert\LessThan(
+        value: 'today',
+        message: "La date de naissance doit être dans le passé"
+    )]
     private ?\DateTimeInterface $dateNaissance = null;
 
     #[ORM\Column(type: 'datetime')]

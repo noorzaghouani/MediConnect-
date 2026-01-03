@@ -84,12 +84,12 @@ body {
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Logo Icon - Style comme Dashboard Médecin */
+/* Logo Icon - Style identique au Dashboard Médecin */
 .logo-icon {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
     background: white;
-    border-radius: 50%;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;

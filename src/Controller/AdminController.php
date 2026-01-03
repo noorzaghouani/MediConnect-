@@ -173,6 +173,9 @@ class AdminController extends AbstractController
                 $user->setPassword($hashedPassword);
             }
 
+            $em->flush();
+            $this->addFlash('success', 'Profil modifié avec succès !');
+
         }
 
         return $this->redirectToRoute('app_admin_dashboard');

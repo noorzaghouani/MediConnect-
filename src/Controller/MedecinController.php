@@ -189,11 +189,11 @@ class MedecinController extends AbstractController
 
                 $createdCount = 0;
 
-                // Créer les créneaux de 40 minutes
+                // Créer les créneaux de 20 minutes
                 $currentStart = clone $dateDebut;
                 while ($currentStart < $dateFin) {
                     $currentEnd = clone $currentStart;
-                    $currentEnd->modify('+40 minutes');
+                    $currentEnd->modify('+20 minutes');
 
                     // Ne pas dépasser la fin de plage
                     if ($currentEnd > $dateFin) {
@@ -235,10 +235,17 @@ class MedecinController extends AbstractController
     }
 
     #[Route('/medecin/disponibilites/{id}/delete', name: 'app_medecin_disponibilite_delete', methods: ['POST'])]
-    public function deleteDisponibilite(Disponibilite $disponibilite, EntityManagerInterface $em): Response
+    public function deleteDisponibilite(int $id, EntityManagerInterface $em): Response
     {
         /** @var Medecin $medecin */
         $medecin = $this->getUser();
+
+        $disponibilite = $em->getRepository(Disponibilite::class)->find($id);
+
+        if (!$disponibilite) {
+            $this->addFlash('error', 'Disponibilité introuvable.');
+            return $this->redirectToRoute('app_medecin_disponibilites');
+        }
 
         // Vérifier que la disponibilité appartient bien au médecin
         if ($disponibilite->getMedecin() !== $medecin) {

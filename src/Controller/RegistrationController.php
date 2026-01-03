@@ -2,23 +2,24 @@
 
 namespace App\Controller;
 
-use App\Entity\Patient;
 use App\Entity\Medecin;
+use App\Entity\Patient;
 use App\Form\RegistrationFormType;
+use App\Repository\SpecialityRepository;
+use App\Security\LoginAuthenticator;
+use App\Service\FileUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-
-use App\Security\LoginAuthenticator;
 use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
 
 class RegistrationController extends AbstractController
 {
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, UserAuthenticatorInterface $userAuthenticator, LoginAuthenticator $authenticator): Response
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, UserAuthenticatorInterface $userAuthenticator, LoginAuthenticator $authenticator, EntityManagerInterface $entityManager, SpecialityRepository $specialityRepository, FileUploadService $fileUploadService): Response
     {
         $form = $this->createForm(RegistrationFormType::class);
         $form->handleRequest($request);
@@ -33,45 +34,46 @@ class RegistrationController extends AbstractController
             }
 
             if ($existingUser) {
-                $this->addFlash('error', 'Cet email est déjà utilisé. Veuillez vous connecter ou utiliser un autre email.');
-                return $this->render('registration/register.html.twig', [
-                    'registrationForm' => $form->createView(),
-                ]);
+                $this->addFlash('error', 'Un compte avec cet email existe déjà.');
+                return $this->redirectToRoute('app_register');
             }
 
-            // Créer l'utilisateur selon le type
             if ($data['role'] === 'medecin') {
                 $user = new Medecin();
 
-                // Gérer l'upload du diplôme ici
+                // Upload sécurisé du diplôme
                 $diplomeFile = $form->get('diplome')->getData();
                 if ($diplomeFile) {
-                    $fileName = uniqid() . '.' . $diplomeFile->guessExtension();
-                    $diplomeFile->move(
-                        $this->getParameter('diplomes_directory'),
-                        $fileName
-                    );
-                    $user->setDiplome($fileName);
+                    try {
+                        $fileName = $fileUploadService->upload(
+                            $diplomeFile,
+                            $this->getParameter('diplomes_directory')
+                        );
+                        $user->setDiplome($fileName);
+                    } catch (\Exception $e) {
+                        $this->addFlash('error', $e->getMessage());
+                        return $this->redirectToRoute('app_register');
+                    }
                 }
 
-                // Gérer la spécialité
-                $specialite = $form->get('specialite')->getData();
-                if ($specialite) {
-                    $user->setSpecialite($specialite);
+                $specialiteId = $data['specialite'];
+                if ($specialiteId) {
+                    $specialite = $specialityRepository->find($specialiteId);
+                    if ($specialite) {
+                        $user->setSpecialite($specialite);
+                    }
                 }
             } else {
                 $user = new Patient();
             }
 
-            // Remplir les données communes
-            $user->setEmail($data['email']);
             $user->setNom($data['nom']);
             $user->setPrenom($data['prenom']);
             $user->setTelephone($data['telephone']);
-            $user->setGenre($data['genre']);
             $user->setDateNaissance($data['date_naissance']);
+            $user->setGenre($data['genre']);
+            $user->setEmail($data['email']);
 
-            // Encoder le mot de passe
             $user->setPassword(
                 $userPasswordHasher->hashPassword(
                     $user,
@@ -82,7 +84,6 @@ class RegistrationController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // Authentifier l'utilisateur automatiquement
             return $userAuthenticator->authenticateUser(
                 $user,
                 $authenticator,
@@ -90,8 +91,11 @@ class RegistrationController extends AbstractController
             );
         }
 
+        $specialities = $specialityRepository->findAll();
+
         return $this->render('registration/register.html.twig', [
             'registrationForm' => $form->createView(),
+            'specialities' => $specialities,
         ]);
     }
 }

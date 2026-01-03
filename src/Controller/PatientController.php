@@ -75,6 +75,29 @@ class PatientController extends AbstractController
         ]);
     }
 
+    #[Route('/patient/mon-dossier-medical', name: 'app_patient_mon_dossier_medical')]
+    public function monDossierMedical(EntityManagerInterface $em): Response
+    {
+        /** @var \App\Entity\Patient $patient */
+        $patient = $this->getUser();
+
+        // Récupérer ou créer le dossier médical
+        $dossier = $patient->getDossierMedical();
+
+        if (!$dossier) {
+            $dossier = new \App\Entity\DossierMedical();
+            $dossier->setPatient($patient);
+            $em->persist($dossier);
+            $em->flush();
+        }
+
+        return $this->render('patient/mon_dossier.html.twig', [
+            'patient' => $patient,
+            'dossier' => $dossier,
+            'returnRoute' => 'app_patient_dashboard'
+        ]);
+    }
+
     #[Route('/patient/ordonnances', name: 'app_patient_ordonnances')]
     public function ordonnances(EntityManagerInterface $em): Response
     {

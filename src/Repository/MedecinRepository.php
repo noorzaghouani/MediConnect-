@@ -57,10 +57,11 @@ class MedecinRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('m')
             ->leftJoin('m.specialite', 's')
+            ->addSelect('s')  // Évite les requêtes N+1
             ->where('LOWER(m.nom) LIKE LOWER(:term)')
             ->orWhere('LOWER(m.prenom) LIKE LOWER(:term)')
             ->orWhere('LOWER(m.email) LIKE LOWER(:term)')
-            ->orWhere('LOWER(s.nom) LIKE LOWER(:term)')
+            ->orWhere('LOWER(COALESCE(s.nom, \'\')) LIKE LOWER(:term)')  // Gère le cas NULL
             ->orderBy('m.nom', 'ASC')
             ->setParameter('term', '%' . $term . '%')
             ->getQuery()

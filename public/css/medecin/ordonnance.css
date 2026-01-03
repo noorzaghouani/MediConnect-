@@ -10,14 +10,39 @@
     max-width: 300px;
 }
 
-.action-btn.btn-edit {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
+/* Actions horizontales - Même taille pour tous les boutons */
+td.text-end .inline-form {
+    display: inline-block;
+    margin: 0;
+}
+
+td.text-end .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     padding: 8px 16px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
     transition: all 0.2s;
+    margin: 0 4px;
+    min-width: 100px;
+    justify-content: center;
+}
+
+.action-btn.btn-view {
+    background: linear-gradient(135deg, #14b8a6, #0d9488);
+    color: white;
+}
+
+.action-btn.btn-view:hover {
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    transform: translateY(-2px);
+}
+
+.action-btn.btn-edit {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
 }
 
 .action-btn.btn-edit:hover {
@@ -28,12 +53,8 @@
 .action-btn.btn-delete {
     background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    transition: all 0.2s;
     cursor: pointer;
+    border: none;
 }
 
 .action-btn.btn-delete:hover {

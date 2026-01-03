@@ -38,7 +38,7 @@ class DisponibiliteType extends AbstractType
                 'html5' => true
             ])
             ->add('submit', SubmitType::class, [
-                'label' => '<i class="fas fa-plus"></i> Créer créneaux (40min)',
+                'label' => '<i class="fas fa-plus"></i> Créer créneaux (20min)',
                 'label_html' => true,
                 'attr' => ['class' => 'btn btn-primary']
             ]);

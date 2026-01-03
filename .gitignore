@@ -18,3 +18,11 @@
 .phpunit.result.cache
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
+
+###> project-specific ###
+.idea/
+.vscode/
+/public/uploads/
+/node_modules/
+*.log
+###< project-specific ###

@@ -8,61 +8,25 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Hybrid Admin Styles (Base Layout) -->
+    <!-- Common Styles -->
+    <link rel="stylesheet" href="{{ asset('css/common/variables.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/buttons.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/cards.css') }}">
+    <!-- Admin Specific Styles -->
     <link rel="stylesheet" href="{{ asset('css/admin/dashboardadmin.css') }}">
-    <!-- Specific Admin Styles -->
     <link rel="stylesheet" href="{{ asset('css/admin/medecinadmin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/profile_modal.css') }}">
 </head>
 <body>
 
     <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="logo-section">
-            <img src="{{ asset('images/uploaded_logo.png') }}" alt="MediConnect Logo" class="logo-img">
-            <span class="logo-text">MediConnect</span>
-        </div>
-
-        <div class="patient-profile">
-            <div class="patient-avatar">
-                <i class="fas fa-user-shield"></i>
-            </div>
-            <h3 class="patient-name">Admin Principal</h3>
-            <p class="patient-role">Administrateur</p>
-        </div>
-
-        <nav>
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="{{ path('app_admin_dashboard') }}" class="nav-link">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Statistiques</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ path('app_admin_demandes') }}" class="nav-link">
-                        <i class="fas fa-clipboard-list"></i>
-                        <span>Demandes</span>
-                        {% if medecinsNonVerifiesCount > 0 %}
-                            <span class="notification-badge">{{ medecinsNonVerifiesCount }}</span>
-                        {% endif %}
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ path('app_admin_medecins') }}" class="nav-link active">
-                        <i class="fas fa-user-md"></i>
-                        <span>Médecin</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ path('app_admin_patients') }}" class="nav-link">
-                        <i class="fas fa-user-injured"></i>
-                        <span>Patient</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
+    {% include 'components/_sidebar.html.twig' with {
+        'role': 'admin',
+        'user': app.user,
+        'current_route': 'app_admin_medecins',
+        'medecinsNonVerifiesCount': medecinsNonVerifiesCount
+    } %}
 
     <!-- MAIN CONTENT -->
     <main class="main-content">

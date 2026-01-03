@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: 'App\Repository\RendezVousRepository')]
 #[ORM\Table(name: 'rendez_vous')]
+#[ORM\HasLifecycleCallbacks]
 class RendezVous
 {
     const STATUT_ATTENTE = 'en_attente';
@@ -26,7 +27,7 @@ class RendezVous
     private ?Patient $patient = null;
 
     #[ORM\ManyToOne(targetEntity: 'App\Entity\Medecin', inversedBy: 'rendezVous')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?Medecin $medecin = null;
 
     #[ORM\Column(type: 'datetime')]

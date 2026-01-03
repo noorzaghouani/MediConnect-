@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Dossier Médical - {{ patient.prenom }} {{ patient.nom }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/common/variables.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/medecin/medecin_dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/medecin/dossier.css') }}">
+    <style>
+        /* Force header display */
+        .header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background: white !important;
+            padding: 25px 30px !important;
+            border-radius: 20px !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+            margin-bottom: 30px !important;
+        }
+    </style>
+</head>
+<body>
+    {# Utiliser la sidebar PATIENT au lieu de médecin #}
+    {% include 'patient/_sidebar.html.twig' %}
+
+    <main class="main-content">
+        <header class="header">
+            <div class="header-left">
+                <h1><i class="fas fa-folder-open"></i> Mon Dossier Médical</h1>
+                <p>{{ patient.nom|upper }} {{ patient.prenom }}</p>
+            </div>
+            <div class="header-right">
+                <a href="{{ path(returnRoute|default('app_patient_dashboard')) }}" class="header-btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+        </header>
+
+        <!-- Patient Info Card -->
+        <div class="patient-info-card">
+            <div class="patient-header">
+                <div class="patient-avatar-large">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="patient-details">
+                    <h2>{{ patient.nom|upper }} {{ patient.prenom }}</h2>
+                    <div class="patient-meta">
+                        <span><i class="fas fa-venus-mars"></i> {{ patient.genre|default('N/A') }}</span>
+                        <span><i class="fas fa-birthday-cake"></i> {{ patient.dateNaissance ? patient.dateNaissance|date('d/m/Y') : 'N/A' }}</span>
+                        <span><i class="fas fa-phone"></i> {{ patient.telephone|default('N/A') }}</span>
+                        <span><i class="fas fa-envelope"></i> {{ patient.email }}</span>
+                    </div>
+                    <div class="dossier-meta">
+                        <i class="fas fa-calendar-check"></i> Dossier créé le {{ dossier.dateCreation|date('d/m/Y') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consultations History -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">
+                    <i class="fas fa-history"></i> Historique des Consultations
+                </h2>
+                <span class="badge-count">{{ dossier.consultations|length }} consultation(s)</span>
+            </div>
+
+            {% if dossier.consultations is empty %}
+                <div class="empty-state">
+                    <i class="fas fa-clipboard-list"></i>
+                    <h3>Aucune consultation enregistrée</h3>
+                    <p>L'historique de vos consultations apparaîtra ici.</p>
+                </div>
+            {% else %}
+                <div class="consultations-timeline">
+                    {% for consultation in dossier.consultations|reverse %}
+                        <div class="consultation-card">
+                            <div class="consultation-date-badge">
+                                <div class="date-day">{{ consultation.date|date('d') }}</div>
+                                <div class="date-month">{{ consultation.date|date('M') }}</div>
+                                <div class="date-year">{{ consultation.date|date('Y') }}</div>
+                            </div>
+
+                            <div class="consultation-content">
+                                <div class="consultation-header">
+                                    <h3>{{ consultation.motif }}</h3>
+                                    <div class="consultation-doctor">
+                                        <i class="fas fa-user-md"></i> 
+                                        Dr. {{ consultation.medecin.nom }}
+                                    </div>
+                                </div>
+
+                                <div class="consultation-body">
+                                    {% if consultation.symptomes %}
+                                        <div class="consultation-section">
+                                            <label><i class="fas fa-thermometer-half"></i> Symptômes</label>
+                                            <p>{{ consultation.symptomes }}</p>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if consultation.allergies %}
+                                        <div class="consultation-section">
+                                            <label><i class="fas fa-exclamation-triangle"></i> Allergies</label>
+                                            <p>{{ consultation.allergies }}</p>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if consultation.tension or consultation.temperature or consultation.frequenceCardiaque %}
+                                        <div class="consultation-section vitals-section">
+                                            <label><i class="fas fa-heartbeat"></i> Constantes Vitales</label>
+                                            <div class="vitals-display">
+                                                {% if consultation.tension %}
+                                                    <span><strong>Tension:</strong> {{ consultation.tension }} mmHg</span>
+                                                {% endif %}
+                                                {% if consultation.temperature %}
+                                                    <span><strong>Température:</strong> {{ consultation.temperature }}°C</span>
+                                                {% endif %}
+                                                {% if consultation.frequenceCardiaque %}
+                                                    <span><strong>FC:</strong> {{ consultation.frequenceCardiaque }} bpm</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="consultation-section">
+                                        <label><i class="fas fa-stethoscope"></i> Diagnostic</label>
+                                        <p>{{ consultation.diagnostic }}</p>
+                                    </div>
+
+                                    {% if consultation.observations %}
+                                        <div class="consultation-section">
+                                            <label><i class="fas fa-notes-medical"></i> Observations</label>
+                                            <p>{{ consultation.observations }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>

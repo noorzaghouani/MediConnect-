@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ConsultationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ConsultationRepository::class)]
 class Consultation
@@ -18,7 +19,7 @@ class Consultation
     private ?DossierMedical $dossierMedical = null;
 
     #[ORM\ManyToOne(inversedBy: 'consultations', targetEntity: Medecin::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?Medecin $medecin = null;
 
     #[ORM\OneToOne(mappedBy: 'consultation', targetEntity: RendezVous::class)]
@@ -28,9 +29,11 @@ class Consultation
     private ?\DateTimeInterface $date = null;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: "Le motif est obligatoire")]
     private ?string $motif = null;
 
     #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank(message: "Le diagnostic est obligatoire")]
     private ?string $diagnostic = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
@@ -46,9 +49,19 @@ class Consultation
     private ?string $tension = null;
 
     #[ORM\Column(type: 'decimal', precision: 4, scale: 1, nullable: true)]
-    private ?string $temperature = null;
+    #[Assert\Range(
+        min: 30,
+        max: 45,
+        notInRangeMessage: "La température doit être entre {{ min }}° et {{ max }}°C"
+    )]
+    private ?float $temperature = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]
+    #[Assert\Range(
+        min: 40,
+        max: 200,
+        notInRangeMessage: "La fréquence cardiaque doit être entre {{ min }} et {{ max }} bpm"
+    )]
     private ?int $frequenceCardiaque = null;
 
     public function __construct()
@@ -171,12 +184,12 @@ class Consultation
         return $this;
     }
 
-    public function getTemperature(): ?string
+    public function getTemperature(): ?float
     {
         return $this->temperature;
     }
 
-    public function setTemperature(?string $temperature): self
+    public function setTemperature(?float $temperature): self
     {
         $this->temperature = $temperature;
         return $this;
