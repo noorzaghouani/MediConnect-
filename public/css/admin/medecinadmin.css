@@ -169,3 +169,30 @@
         transform: translateY(0);
     }
 }
+
+/* Delete Button Styles */
+.btn-delete {
+    background: linear-gradient(135deg, #0D9488, #0d8478);
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    margin-left: 8px;
+}
+
+.btn-delete:hover {
+    background: linear-gradient(135deg, #0d8478, #0f766e);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+}
+
+.btn-delete i {
+    font-size: 11px;
+}

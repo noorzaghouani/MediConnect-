@@ -14,10 +14,10 @@ class Medecin extends User
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $diplome = null;
 
-    #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: Disponibilite::class)]
+    #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: Disponibilite::class, cascade: ['remove'])]
     private Collection $disponibilites;
 
-    #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: RendezVous::class)]
+    #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: RendezVous::class, cascade: ['remove'])]
     private Collection $rendezVous;
 
     public function __construct()
@@ -29,7 +29,7 @@ class Medecin extends User
         $this->consultations = new ArrayCollection();
     }
 
-    #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: Consultation::class)]
+    #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: Consultation::class, cascade: ['remove'])]
     private Collection $consultations;
 
     #[ORM\ManyToOne(targetEntity: Speciality::class)]

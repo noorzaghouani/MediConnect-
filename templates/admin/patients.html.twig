@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="{{ asset('css/admin/dashboardadmin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/patientadmin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/profile_modal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/delete_modal.css') }}">
 </head>
 <body>
 
@@ -77,6 +78,9 @@
                                 <td class="table-cell-actions">
                                     <button class="btn btn-view" onclick="openPatientModal('{{ patient.prenom }} {{ patient.nom }}', '{{ patient.email }}', '{{ patient.telephone }}')">
                                         <i class="fas fa-eye"></i> Voir
+                                    </button>
+                                    <button class="btn btn-delete" onclick="confirmDeletePatient({{ patient.id }}, '{{ patient.prenom }} {{ patient.nom }}')">
+                                        <i class="fas fa-trash"></i> Supprimer
                                     </button>
                                 </td>
                             </tr>
@@ -142,37 +146,47 @@
         </div>
     </div>
 
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div id="deletePatientModal" class="modal-overlay">
+        <div class="modal-card modal-delete">
+            <!-- Modal Header -->
+            <div class="modal-header modal-header-danger">
+                <div class="modal-title">
+                    <div class="title-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <span>Confirmer la suppression</span>
+                </div>
+                <button onclick="closeDeletePatientModal()" class="btn-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <p class="delete-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Êtes-vous sûr de vouloir supprimer le compte de <strong><span id="deletePatientName"></span></strong> ?
+                </p>
+                <p class="delete-info">Cette action est <strong>irréversible</strong>. Toutes les ordonnances, dossier médical et rendez-vous associés seront également supprimés.</p>
+                
+                <form id="deletePatientForm" method="POST" action="">
+                    <div class="modal-footer-buttons">
+                        <button type="button" onclick="closeDeletePatientModal()" class="btn-modal-cancel">
+                            Annuler
+                        </button>
+                        <button type="submit" class="btn-modal-delete">
+                            <i class="fas fa-trash"></i> Supprimer définitivement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- ADMIN PROFILE MODAL -->
     {% include 'admin/_profile_modal.html.twig' %}
 
     <!-- JavaScript for Modals -->
-    <script>
-        // Patient Details Modal Logic
-        function openPatientModal(name, email, phone) {
-            document.getElementById('modalPatientName').textContent = name;
-            document.getElementById('modalPatientEmail').textContent = email;
-            document.getElementById('modalPatientPhone').textContent = phone;
-            
-            document.getElementById('patientModal').style.display = 'flex';
-        }
-
-        function closePatientModal() {
-            document.getElementById('patientModal').style.display = 'none';
-        }
-        
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const patientModal = document.getElementById('patientModal');
-            const adminModal = document.getElementById('adminProfileModal');
-
-            if (event.target == patientModal) {
-                closePatientModal();
-            }
-            if (event.target == adminModal) {
-                adminModal.style.display = 'none';
-            }
-        }
-    </script>
+    <script src="{{ asset('js/admin/patient_actions.js') }}"></script>
     <script src="{{ asset('js/admin/profile_modal.js') }}"></script>
 </body>
 </html>

@@ -145,6 +145,32 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_dashboard');
     }
 
+    #[Route('/medecin/{id}/delete', name: 'app_admin_delete_medecin', methods: ['POST'])]
+    public function deleteMedecin(int $id, EntityManagerInterface $em): Response
+    {
+        $medecin = $em->getRepository(Medecin::class)->find($id);
+
+        if (!$medecin) {
+            $this->addFlash('error', 'Médecin non trouvé.');
+            return $this->redirectToRoute('app_admin_medecins');
+        }
+
+        try {
+            // Récupérer le nom pour le message
+            $nomComplet = 'Dr. ' . $medecin->getPrenom() . ' ' . $medecin->getNom();
+
+            // Suppression avec cascade automatique (Doctrine gère les entités liées)
+            $em->remove($medecin);
+            $em->flush();
+
+            $this->addFlash('success', $nomComplet . ' a été supprimé avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_admin_medecins');
+    }
+
     #[Route('/profile/update', name: 'app_admin_update_profile', methods: ['POST'])]
     public function updateProfile(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): Response
     {
@@ -201,5 +227,31 @@ class AdminController extends AbstractController
             'medecinsNonVerifiesCount' => $medecinsNonVerifiesCount,
             'searchTerm' => $searchTerm
         ]);
+    }
+
+    #[Route('/patient/{id}/delete', name: 'app_admin_delete_patient', methods: ['POST'])]
+    public function deletePatient(int $id, EntityManagerInterface $em): Response
+    {
+        $patient = $em->getRepository(Patient::class)->find($id);
+
+        if (!$patient) {
+            $this->addFlash('error', 'Patient non trouvé.');
+            return $this->redirectToRoute('app_admin_patients');
+        }
+
+        try {
+            // Récupérer le nom pour le message
+            $nomComplet = $patient->getPrenom() . ' ' . $patient->getNom();
+
+            // Suppression avec cascade automatique (Doctrine gère les entités liées)
+            $em->remove($patient);
+            $em->flush();
+
+            $this->addFlash('success', $nomComplet . ' a été supprimé avec succès.');
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_admin_patients');
     }
 }

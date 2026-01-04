@@ -56,12 +56,9 @@ class RegistrationController extends AbstractController
                     }
                 }
 
-                $specialiteId = $data['specialite'];
-                if ($specialiteId) {
-                    $specialite = $specialityRepository->find($specialiteId);
-                    if ($specialite) {
-                        $user->setSpecialite($specialite);
-                    }
+                $specialite = $form->get('specialite')->getData();
+                if ($specialite) {
+                    $user->setSpecialite($specialite);
                 }
             } else {
                 $user = new Patient();

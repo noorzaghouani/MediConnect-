@@ -1,0 +1,77 @@
+/* Delete Modal Styles */
+.modal-delete {
+    max-width: 500px;
+}
+
+.modal-header-danger {
+    background: linear-gradient(135deg, #0D9488, #0d8478);
+}
+
+.delete-warning {
+    background: #f0fdfa;
+    border-left: 4px solid #0D9488;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 15px;
+    color: #115e59;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.delete-warning i {
+    font-size: 20px;
+    color: #0D9488;
+}
+
+.delete-info {
+    color: var(--gray-600);
+    font-size: 14px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.btn-modal-cancel {
+    background: var(--gray-200);
+    color: var(--gray-700);
+    border: 1px solid var(--gray-300);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-modal-cancel:hover {
+    background: var(--gray-300);
+}
+
+.btn-modal-delete {
+    background: linear-gradient(135deg, #0D9488, #0d8478);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-modal-delete:hover {
+    background: linear-gradient(135deg, #0d8478, #0f766e);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+}
+
+.modal-footer-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+}

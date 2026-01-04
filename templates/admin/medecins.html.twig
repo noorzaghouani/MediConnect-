@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="{{ asset('css/admin/dashboardadmin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/medecinadmin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/profile_modal.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/delete_modal.css') }}">
 </head>
 <body>
 
@@ -78,6 +79,9 @@
                                 <td class="table-cell-actions">
                                     <button class="btn btn-view" onclick="openModal('{{ medecin.prenom }} {{ medecin.nom }}', '{{ medecin.specialite ? medecin.specialite.nom : 'Non définie' }}', '{{ medecin.email }}', '{{ medecin.telephone }}')">
                                         <i class="fas fa-eye"></i> Voir
+                                    </button>
+                                    <button class="btn btn-delete" onclick="confirmDelete({{ medecin.id }}, '{{ medecin.prenom }} {{ medecin.nom }}')">
+                                        <i class="fas fa-trash"></i> Supprimer
                                     </button>
                                 </td>
                             </tr>
@@ -148,33 +152,47 @@
         </div>
     </div>
 
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div id="deleteModal" class="modal-overlay">
+        <div class="modal-card modal-delete">
+            <!-- Modal Header -->
+            <div class="modal-header modal-header-danger">
+                <div class="modal-title">
+                    <div class="title-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <span>Confirmer la suppression</span>
+                </div>
+                <button onclick="closeDeleteModal()" class="btn-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <p class="delete-warning">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Êtes-vous sûr de vouloir supprimer le compte du <strong>Dr. <span id="deleteMedecinName"></span></strong> ?
+                </p>
+                <p class="delete-info">Cette action est <strong>irréversible</strong>. Toutes les consultations, disponibilités et rendez-vous associés seront également supprimés.</p>
+                
+                <form id="deleteForm" method="POST" action="">
+                    <div class="modal-footer-buttons">
+                        <button type="button" onclick="closeDeleteModal()" class="btn-modal-cancel">
+                            Annuler
+                        </button>
+                        <button type="submit" class="btn-modal-delete">
+                            <i class="fas fa-trash"></i> Supprimer définitivement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- ADMIN PROFILE MODAL -->
     {% include 'admin/_profile_modal.html.twig' %}
 
     <!-- JavaScript for Modal -->
-    <script>
-        // Modal Logic Only (Search JS Removed)
-        function openModal(name, specialty, email, phone) {
-            document.getElementById('modalName').textContent = name;
-            document.getElementById('modalSpecialty').textContent = specialty;
-            document.getElementById('modalEmail').textContent = email;
-            document.getElementById('modalPhone').textContent = phone;
-            
-            document.getElementById('doctorModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('doctorModal').style.display = 'none';
-        }
-        
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('doctorModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-    </script>
+    <script src="{{ asset('js/admin/medecin_actions.js') }}"></script>
     <script src="{{ asset('js/admin/profile_modal.js') }}"></script>
 </body>
 </html>
