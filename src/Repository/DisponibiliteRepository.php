@@ -21,7 +21,9 @@ class DisponibiliteRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('d')
             ->where('d.medecin = :medecin')
+            ->andWhere('d.dateDebut >= :now')
             ->setParameter('medecin', $medecin)
+            ->setParameter('now', new \DateTime('today'))
             ->orderBy('d.dateDebut', 'ASC')
             ->getQuery()
             ->getResult();

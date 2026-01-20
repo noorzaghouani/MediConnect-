@@ -143,6 +143,63 @@ class PatientController extends AbstractController
         ]);
     }
 
+    #[Route('/patient/rdv', name: 'app_patient_rdv')]
+    public function prendreRdv(Request $request, EntityManagerInterface $em): Response
+    {
+        /** @var \App\Entity\Patient $patient */
+        $patient = $this->getUser();
+
+        // Récupérer toutes les spécialités pour le filtre
+        $specialites = $em->getRepository(\App\Entity\Speciality::class)->findAll();
+
+        // Récupérer les paramètres de recherche
+        $dateRecherche = $request->query->get('date');
+        $specialiteId = $request->query->get('specialite');
+
+        $disponibilites = [];
+
+        // Si une date est fournie, rechercher les disponibilités
+        if ($dateRecherche) {
+            $qb = $em->createQueryBuilder();
+
+            // Convertir la date en DateTime pour la requête
+            $date = new \DateTime($dateRecherche);
+            $dateDebut = (clone $date)->setTime(0, 0, 0);
+            $dateFin = (clone $date)->setTime(23, 59, 59);
+
+            // Requête DQL pour récupérer les disponibilités du jour
+            $qb->select('d', 'm', 's')
+                ->from(\App\Entity\Disponibilite::class, 'd')
+                ->leftJoin('d.medecin', 'm')
+                ->leftJoin('m.specialite', 's')
+                ->where('d.dateDebut >= :dateDebut')
+                ->andWhere('d.dateDebut <= :dateFin')
+                ->andWhere('d.estDisponible = true') // Seulement les créneaux disponibles
+                ->andWhere('m.estVerifie = true') // Seulement les médecins vérifiés
+                ->setParameter('dateDebut', $dateDebut)
+                ->setParameter('dateFin', $dateFin);
+
+            // Filtre par spécialité si fourni
+            if ($specialiteId) {
+                $qb->andWhere('s.id = :specialiteId')
+                    ->setParameter('specialiteId', $specialiteId);
+            }
+
+            // Ordonner par médecin puis par heure
+            $qb->orderBy('m.nom', 'ASC')
+                ->addOrderBy('d.dateDebut', 'ASC');
+
+            $disponibilites = $qb->getQuery()->getResult();
+        }
+
+        return $this->render('patient/rdv.html.twig', [
+            'specialites' => $specialites,
+            'disponibilites' => $disponibilites,
+            'dateRecherche' => $dateRecherche,
+            'specialiteId' => $specialiteId
+        ]);
+    }
+
     #[Route('/patient/edit-profile', name: 'app_patient_edit_profile', methods: ['POST'])]
     public function editProfile(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
     {
@@ -183,5 +240,39 @@ class PatientController extends AbstractController
 
         $this->addFlash('success', 'Profil mis à jour avec succès !');
         return $this->redirectToRoute('app_patient_dashboard');
+    }
+    #[Route('/patient/rdv/reserver/{id}', name: 'app_patient_rdv_reserver', methods: ['POST'])]
+    public function reserverRdv(int $id, EntityManagerInterface $em): JsonResponse
+    {
+        /** @var \App\Entity\Patient $patient */
+        $patient = $this->getUser();
+
+        // Récupérer la disponibilité
+        $disponibilite = $em->getRepository(\App\Entity\Disponibilite::class)->find($id);
+
+        if (!$disponibilite) {
+            return new JsonResponse(['success' => false, 'message' => 'Disponibilité introuvable.'], 404);
+        }
+
+        if (!$disponibilite->isEstDisponible()) {
+            return new JsonResponse(['success' => false, 'message' => 'Ce créneau n\'est plus disponible.'], 400);
+        }
+
+        // Créer le rendez-vous
+        $rdv = new \App\Entity\RendezVous();
+        $rdv->setPatient($patient);
+        $rdv->setMedecin($disponibilite->getMedecin());
+        $rdv->setDateHeure($disponibilite->getDateDebut());
+        $rdv->setStatut('en_attente');
+        $rdv->setMotif('Consultation standard'); // Motif par défaut ou à demander via un modal
+        $rdv->setCreatedAt(new \DateTimeImmutable());
+
+        // Marquer la disponibilité comme prise
+        $disponibilite->setEstDisponible(false);
+
+        $em->persist($rdv);
+        $em->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Rendez-vous réservé avec succès !']);
     }
 }

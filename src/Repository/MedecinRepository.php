@@ -22,8 +22,16 @@ class MedecinRepository extends ServiceEntityRepository
     }
 
     /**
-     * Search doctors by name, firstname, or specialty
-     * @return Medecin[]
+     * Recherche les médecins vérifiés selon plusieurs critères
+     * 
+     * Effectue une recherche case-insensitive sur le nom, prénom et/ou spécialité.
+     * Seuls les médecins vérifiés sont retournés.
+     * Les résultats sont limités à 20 pour optimiser les performances.
+     * 
+     * @param string|null $nom Nom du médecin (recherche partielle)
+     * @param string|null $prenom Prénom du médecin (recherche partielle)
+     * @param string|null $specialite Nom de la spécialité médicale
+     * @return Medecin[] Liste des médecins correspondants, triés par nom
      */
     public function searchMedecins(?string $nom = null, ?string $prenom = null, ?string $specialite = null): array
     {
@@ -51,7 +59,18 @@ class MedecinRepository extends ServiceEntityRepository
             ->getResult();
     }
     /**
-     * Finds doctors by a single search term matching name, firstname or specialty
+     * Recherche des médecins par un terme unique
+     * 
+     * Effectue une recherche globale case-insensitive sur :
+     * - Nom
+     * - Prénom
+     * - Email
+     * - Nom de la spécialité
+     * 
+     * Utilise un LEFT JOIN avec addSelect pour éviter les requêtes N+1.
+     * 
+     * @param string $term Terme de recherche (recherche partielle)
+     * @return Medecin[] Liste des médecins correspondants, triés par nom
      */
     public function searchByTerm(string $term): array
     {

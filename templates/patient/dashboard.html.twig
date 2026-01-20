@@ -22,7 +22,7 @@
         <!-- Header -->
         <header class="header">
             <div class="header-left">
-                <h1>Bienvenue, {{ app.user.prenom }}</h1>
+                <h1>Bienvenue, {{ app.user.prenom |upper }}</h1>
                 <p class="header-date">{{ "now"|date("l d F Y", "Europe/Paris") }}</p>
             </div>
             <div class="header-right">
@@ -194,6 +194,7 @@
 
             <div class="modal-body-white">
                 <form action="{{ path('app_patient_edit_profile') }}" method="POST" id="profileForm">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('patient_edit_profile') }}">
                     
                     <!-- Section: Informations Personnelles -->
                     <div class="section-header-teal">

@@ -55,9 +55,30 @@ class AdminController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // Consultations du Jour (Heure par Heure - Mocké pour l'instant pour la performance immédiate comme validé)
-        // Dans une implémentation réelle on ferait une requête group by HOUR(date)
-        $consultationsParHeure = [2, 5, 3, 8, 6, 4]; // Données simulées pour correspondre au design validé
+        // ✅ NOUVEAU: Consultations par Jour (7 derniers jours - Données réelles)
+        $consultationsParJour = [];
+        $labelsJours = [];
+
+        for ($i = 6; $i >= 0; $i--) {
+            $date = new \DateTime("-$i days");
+            $dateDebut = (clone $date)->setTime(0, 0, 0);
+            $dateFin = (clone $date)->setTime(23, 59, 59);
+
+            // Compter consultations de ce jour
+            $nbConsult = $consultationRepo->createQueryBuilder('c')
+                ->select('COUNT(c.id)')
+                ->where('c.date >= :debut')
+                ->andWhere('c.date <= :fin')
+                ->setParameter('debut', $dateDebut)
+                ->setParameter('fin', $dateFin)
+                ->getQuery()
+                ->getSingleScalarResult();
+
+            $consultationsParJour[] = $nbConsult;
+
+            // Format label: "Lun 06/01" 
+            $labelsJours[] = $date->format('D d/m');
+        }
 
         return $this->render('admin/dashboard.html.twig', [
             'nbMedecins' => $nbMedecins,
@@ -65,8 +86,9 @@ class AdminController extends AbstractController
             'nbConsultations' => $nbConsultations,
             'nbConsultationsJour' => $nbConsultationsJour,
             'repartitionSpecialites' => $repartitionSpecialites,
-            'consultationsParHeure' => $consultationsParHeure,
-            'medecinsNonVerifies' => $medecinsNonVerifies, // Gardé pour le compteur badge sidebar si besoin
+            'consultationsParJour' => $consultationsParJour,  // ✅ Données réelles par jour
+            'labelsJours' => $labelsJours,  // ✅ Labels jours
+            'medecinsNonVerifies' => $medecinsNonVerifies,
         ]);
     }
 

@@ -15,7 +15,12 @@ class OrdonnanceController extends AbstractController
     #[Route('/medecin/ordonnances', name: 'app_medecin_ordonnances')]
     public function index(EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\Medecin $medecin */
         $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
+        }
 
         // Récupérer toutes les ordonnances créées via les consultations du médecin OU directement par le médecin
         $ordonnances = $em->getRepository(Ordonnance::class)->createQueryBuilder('o')
@@ -34,7 +39,12 @@ class OrdonnanceController extends AbstractController
     #[Route('/medecin/ordonnance/new', name: 'app_medecin_ordonnance_new')]
     public function new(Request $request, EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\Medecin $medecin */
         $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
+        }
 
         // Récupérer SEULEMENT les patients qui ont au moins une consultation
         $patients = $em->getRepository(Patient::class)->findPatientsWithConsultationsByMedecin($medecin);
@@ -70,6 +80,12 @@ class OrdonnanceController extends AbstractController
     #[Route('/medecin/ordonnance/{id}', name: 'app_medecin_ordonnance_show')]
     public function show(int $id, EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\Medecin $medecin */
+        $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
+        }
         $ordonnance = $em->getRepository(Ordonnance::class)->find($id);
 
         if (!$ordonnance) {
@@ -85,6 +101,12 @@ class OrdonnanceController extends AbstractController
     #[Route('/medecin/ordonnance/{id}/edit', name: 'app_medecin_ordonnance_edit')]
     public function edit(int $id, Request $request, EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\Medecin $medecin */
+        $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
+        }
         $ordonnance = $em->getRepository(Ordonnance::class)->find($id);
 
         if (!$ordonnance) {
@@ -110,6 +132,12 @@ class OrdonnanceController extends AbstractController
     #[Route('/medecin/ordonnance/{id}/delete', name: 'app_medecin_ordonnance_delete', methods: ['POST'])]
     public function delete(int $id, EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\Medecin $medecin */
+        $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->redirectToRoute('app_medecin_dashboard');
+        }
         $ordonnance = $em->getRepository(Ordonnance::class)->find($id);
 
         if (!$ordonnance) {

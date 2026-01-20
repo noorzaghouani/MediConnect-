@@ -110,7 +110,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{{ path('app_patient_rdv') }}" class="nav-link {% if current_route == 'app_patient_rdv' %}active{% endif %}">
                         <i class="fas fa-calendar-plus"></i>
                         <span>Prendre RDV</span>
                     </a>

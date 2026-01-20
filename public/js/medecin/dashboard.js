@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('Dashboard JS initialized');
 
     // ============================
     // TOAST NOTIFICATION SYSTEM
@@ -60,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const cancelProfileBtn = document.getElementById('cancelModalBtn');
 
     function openProfileModal() {
-        console.log('Opening profile modal...');
         if (profileModal) {
             profileModal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -68,7 +66,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function closeProfileModal() {
-        console.log('Closing profile modal...');
         if (profileModal) {
             profileModal.classList.remove('active');
             document.body.style.overflow = '';

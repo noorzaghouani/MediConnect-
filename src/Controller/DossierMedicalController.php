@@ -17,6 +17,12 @@ class DossierMedicalController extends AbstractController
     #[Route('/medecin/dossier/{id}', name: 'app_dossier_show')]
     public function show(int $id, Request $request, EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\Medecin $medecin */
+        $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
+        }
         // Récupérer le patient manuellement
         $patient = $em->getRepository(Patient::class)->find($id);
 
@@ -49,6 +55,12 @@ class DossierMedicalController extends AbstractController
     #[Route('/medecin/consultation/new/{id}', name: 'app_consultation_new')]
     public function createConsultation(int $id, Request $request, EntityManagerInterface $em): Response
     {
+        /** @var \App\Entity\Medecin $medecin */
+        $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
+        }
         // Récupérer le RDV manuellement
         $rendezVous = $em->getRepository(RendezVous::class)->find($id);
 

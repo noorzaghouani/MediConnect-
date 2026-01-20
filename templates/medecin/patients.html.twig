@@ -75,7 +75,7 @@
                                             <i class="fas fa-folder-open"></i> Dossier
                                         </a>
                                         {% if item.nextRdv %}
-                                            <a href="{{ path('app_consultation_new', {'id': item.nextRdv.id}) }}" class="action-btn btn-consult-yellow no-decoration">
+                                            <a href="{{ path('app_consultation_new', {'id': item.nextRdv.id}) }}" class="action-btn btn-primary no-decoration">
                                                 <i class="fas fa-stethoscope"></i> Consulter
                                             </a>
                                         {% endif %}

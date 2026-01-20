@@ -3,7 +3,6 @@
 // ============================
 
 document.addEventListener('DOMContentLoaded', function () {
-    console.log('Patient Dashboard loaded successfully');
 
     // ============================
     // Modal: Edit Profile
@@ -243,7 +242,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 return res.json();
             })
             .then(data => {
-                console.log('Disponibilités reçues:', data);
 
                 if (!Array.isArray(data) || data.length === 0) {
                     list.innerHTML = '<p class="no-slots">Aucun créneau disponible pour le moment.</p>';
@@ -342,7 +340,4 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     updateHeaderDate();
-
-    console.log('%c🏥 MediConnect Patient Dashboard', 'color: #0d9488; font-size: 16px; font-weight: bold;');
-    console.log('%cDashboard chargé avec succès!', 'color: #10b981; font-size: 12px;');
 });

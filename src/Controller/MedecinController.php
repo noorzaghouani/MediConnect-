@@ -45,40 +45,13 @@ class MedecinController extends AbstractController
         /** @var Medecin $medecin */
         $medecin = $this->getUser();
 
-        // Find all patients who have had appointments with this doctor
-        $patients = $entityManager->getRepository(Patient::class)->createQueryBuilder('p')
-            ->join('p.rendezVous', 'r')
-            ->where('r.medecin = :medecin')
-            ->setParameter('medecin', $medecin)
-            ->distinct()
-            ->orderBy('p.nom', 'ASC')
-            ->getQuery()
-            ->getResult();
-
-        $patientsWithRdv = [];
-        $now = new \DateTime();
-
-        foreach ($patients as $patient) {
-            // Find next upcoming appointment
-            $nextRdv = $entityManager->getRepository(RendezVous::class)->createQueryBuilder('r')
-                ->where('r.patient = :patient')
-                ->andWhere('r.medecin = :medecin')
-                ->andWhere('r.dateHeure > :now')
-                ->andWhere('r.statut IN (:statuses)')
-                ->setParameter('patient', $patient)
-                ->setParameter('medecin', $medecin)
-                ->setParameter('now', $now)
-                ->setParameter('statuses', ['en_attente', 'confirme'])
-                ->orderBy('r.dateHeure', 'ASC')
-                ->setMaxResults(1)
-                ->getQuery()
-                ->getOneOrNullResult();
-
-            $patientsWithRdv[] = [
-                'patient' => $patient,
-                'nextRdv' => $nextRdv
-            ];
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
         }
+
+        // ✅ OPTIMISÉ: Utilise la méthode repository qui évite les requêtes N+1
+        $patientsWithRdv = $entityManager->getRepository(Patient::class)
+            ->findPatientsWithNextRdvByMedecin($medecin);
 
         return $this->render('medecin/patients.html.twig', [
             'patientsWithRdv' => $patientsWithRdv
@@ -93,6 +66,10 @@ class MedecinController extends AbstractController
     ): Response {
         /** @var Medecin $medecin */
         $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
+        }
 
         $nom = $request->request->get('nom');
         $prenom = $request->request->get('prenom');
@@ -154,6 +131,10 @@ class MedecinController extends AbstractController
     {
         /** @var Medecin $medecin */
         $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->render('medecin/pending_verification.html.twig');
+        }
 
         // Créer le formulaire
         $disponibilite = new Disponibilite();
@@ -239,6 +220,10 @@ class MedecinController extends AbstractController
     {
         /** @var Medecin $medecin */
         $medecin = $this->getUser();
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->redirectToRoute('app_medecin_dashboard');
+        }
 
         $disponibilite = $em->getRepository(Disponibilite::class)->find($id);
 

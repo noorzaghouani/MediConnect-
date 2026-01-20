@@ -118,12 +118,14 @@
                 <div class="chart-header">
                     <div class="chart-title">
                         <i class="fas fa-clock chart-icon"></i>
-                        Consultations du Jour
+                        Consultations par Jour
                     </div>
-                    <div class="chart-subtitle">Activité temps réel (08h - 18h)</div>
+                    <div class="chart-subtitle">Activité quotidienne</div>
                 </div>
                 <div class="canvas-container">
-                    <canvas id="lineChart" data-consultations="{{ consultationsParHeure|json_encode|e('html_attr') }}"></canvas>
+                    <canvas id="lineChart" 
+                            data-consultations="{{ consultationsParJour|json_encode|e('html_attr') }}"
+                            data-labels="{{ labelsJours|json_encode|e('html_attr') }}"></canvas>
                 </div>
             </div>
 

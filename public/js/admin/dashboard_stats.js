@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
     // ==========================================
-    // Line Chart: HOURLY (Consultations du Jour)
+    // Line Chart: DAILY (Consultations par Jour)
     // ==========================================
     const lineCanvas = document.getElementById('lineChart');
     if (lineCanvas) {
         const ctxLine = lineCanvas.getContext('2d');
         const consultationsData = JSON.parse(lineCanvas.dataset.consultations || '[]');
+        const labelsData = JSON.parse(lineCanvas.dataset.labels || '[]');
 
         let gradient = ctxLine.createLinearGradient(0, 0, 0, 400);
         gradient.addColorStop(0, 'rgba(13, 148, 136, 0.2)');
@@ -14,10 +15,10 @@ document.addEventListener('DOMContentLoaded', function () {
         new Chart(ctxLine, {
             type: 'line',
             data: {
-                labels: ['08h', '10h', '12h', '14h', '16h', '18h'],
+                labels: labelsData,  // ✅ Labels dynamiques (jours)
                 datasets: [{
-                    label: 'Consultations Aujourd\'hui',
-                    data: consultationsData,
+                    label: 'Consultations',
+                    data: consultationsData,  // ✅ Données réelles par jour
                     borderColor: '#0d9488',
                     backgroundColor: gradient,
                     borderWidth: 3,
@@ -39,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         backgroundColor: '#1e293b',
                         padding: 12,
                         callbacks: {
-                            label: function (context) { return context.parsed.y + ' patients reçus'; }
+                            label: function (context) { return context.parsed.y + ' consultation(s)'; }
                         }
                     }
                 },
@@ -47,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     y: {
                         beginAtZero: true,
                         grid: { borderDash: [5, 5], color: '#f1f5f9' },
-                        suggestedMax: 10
+                        ticks: { stepSize: 1 }  // ✅ Afficher nombres entiers
                     },
                     x: { grid: { display: false } }
                 }

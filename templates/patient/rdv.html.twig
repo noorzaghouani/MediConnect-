@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prendre Rendez-vous - MediConnect Patient</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Common Styles -->
+    <link rel="stylesheet" href="{{ asset('css/common/variables.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/buttons.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/common/cards.css') }}">
+    <!-- Patient Specific Styles -->
+    <link rel="stylesheet" href="{{ asset('css/patient/patient_dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/patient/rdv.css') }}">
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    {% include 'patient/_sidebar.html.twig' %}
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        
+        <!-- HEADER -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Prendre Rendez-vous</h1>
+            </div>
+            <div class="header-right">
+                <a href="{{ path('app_logout') }}" class="header-btn btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Déconnexion
+                </a>
+            </div>
+        </header>
+
+        <!-- SEARCH FORM -->
+        <div class="search-container">
+            <form method="GET" action="{{ path('app_patient_rdv') }}" class="rdv-search-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="date" class="form-label">
+                            <i class="fas fa-calendar-day"></i> Date
+                        </label>
+                        <input type="date" 
+                               id="date" 
+                               name="date" 
+                               class="form-input" 
+                               value="{{ dateRecherche }}" 
+                               required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="specialite" class="form-label">
+                            <i class="fas fa-stethoscope"></i> Spécialité (optionnel)
+                        </label>
+                        <select id="specialite" name="specialite" class="form-select">
+                            <option value="">Toutes les spécialités</option>
+                            {% for specialite in specialites %}
+                                <option value="{{ specialite.id }}" 
+                                        {% if specialiteId == specialite.id %}selected{% endif %}>
+                                    {{ specialite.nom }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group form-group-button">
+                        <button type="submit" class="btn btn-search">
+                            <i class="fas fa-search"></i> Rechercher
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- RESULTS -->
+        {% if dateRecherche %}
+            <div class="results-container">
+                <h2 class="results-title">
+                    <i class="fas fa-clock"></i> 
+                    Créneaux disponibles le {{ dateRecherche|date('d/m/Y') }}
+                    {% if specialiteId %}
+                        {% for specialite in specialites %}
+                            {% if specialite.id == specialiteId %}
+                                - {{ specialite.nom }}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </h2>
+
+                {% if disponibilites|length > 0 %}
+                    <div class="rdv-list">
+                        {% for dispo in disponibilites %}
+                            <div class="rdv-card">
+                                <div class="rdv-doctor-info">
+                                    <div class="doctor-avatar">
+                                        <i class="fas fa-user-md"></i>
+                                    </div>
+                                    <div class="doctor-details">
+                                        <h3 class="doctor-name">Dr. {{ dispo.medecin.prenom }} {{ dispo.medecin.nom }}</h3>
+                                        <p class="doctor-specialty">
+                                            <i class="fas fa-stethoscope"></i>
+                                            {{ dispo.medecin.specialite ? dispo.medecin.specialite.nom : 'Médecin généraliste' }}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="rdv-time">
+                                    <div class="time-badge">
+                                        <i class="fas fa-clock"></i>
+                                        {{ dispo.dateDebut|date('H:i') }} - {{ dispo.dateFin|date('H:i') }}
+                                    </div>
+                                </div>
+
+                                <div class="rdv-action">
+                                    <button class="btn btn-reserve" 
+                                            onclick="reserverCreneau({{ dispo.id }}, '{{ dispo.medecin.prenom }} {{ dispo.medecin.nom }}', '{{ dispo.dateDebut|date('d/m/Y à H:i') }}')">
+                                        <i class="fas fa-calendar-check"></i> Réserver
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="no-results">
+                        <i class="fas fa-calendar-times"></i>
+                        <p>Aucun créneau disponible pour cette date{% if specialiteId %} et cette spécialité{% endif %}.</p>
+                        <p class="no-results-suggestion">Essayez une autre date ou spécialité.</p>
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-calendar-plus"></i>
+                <h3>Recherchez un rendez-vous</h3>
+                <p>Sélectionnez une date et une spécialité pour voir les créneaux disponibles.</p>
+            </div>
+        {% endif %}
+
+    </main>
+
+    <!-- JavaScript -->
+    <script src="{{ asset('js/patient/rdv.js') }}"></script>
+</body>
+</html>

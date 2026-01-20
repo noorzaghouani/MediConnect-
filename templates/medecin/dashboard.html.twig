@@ -93,11 +93,13 @@
                                 {% if rdv.statut == 'en_attente' %}
                                     {# Boutons pour confirmer ou refuser le RDV #}
                                     <form method="POST" action="{{ path('app_medecin_confirm_appointment', {'id': rdv.id}) }}" class="inline-form">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('medecin_appointment') }}">
                                         <button type="submit" class="action-btn btn-success">
                                             <i class="fas fa-check"></i> Confirmer
                                         </button>
                                     </form>
                                     <form method="POST" action="{{ path('app_medecin_reject_appointment', {'id': rdv.id}) }}" class="inline-form">
+                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('medecin_appointment') }}">
                                         <button type="submit" class="action-btn btn-danger">
                                             <i class="fas fa-times"></i> Refuser
                                         </button>
@@ -111,7 +113,7 @@
                                 {% endif %}
                                 
                                 {% if rdv.statut == 'confirme' %}
-                                    <a href="{{ path('app_consultation_new', {'id': rdv.id}) }}" class="action-btn btn-consult-yellow no-decoration">
+                                    <a href="{{ path('app_consultation_new', {'id': rdv.id}) }}" class="action-btn btn-primary no-decoration">
                                         <i class="fas fa-stethoscope"></i> Consulter
                                     </a>
                                 {% endif %}
@@ -139,6 +141,7 @@
 
             <div class="modal-body-white">
                 <form action="{{ path('app_medecin_edit_profile') }}" method="POST">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('medecin_edit_profile') }}">
                     
                     <!-- Section: Informations Personnelles -->
                     <div class="section-header-teal">
