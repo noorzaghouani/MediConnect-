@@ -109,7 +109,7 @@ class PatientRepository extends ServiceEntityRepository
         $patients = $this->createQueryBuilder('p')
             ->join('p.rendezVous', 'r')
             ->where('r.medecin = :medecin')
-            ->andWhere('r.statut = :statut')  // ✅ Filtrer seulement RDV confirmés
+            ->andWhere('r.statut = :statut')
             ->setParameter('medecin', $medecin)
             ->setParameter('statut', 'confirme')
             ->distinct()
@@ -129,7 +129,7 @@ class PatientRepository extends ServiceEntityRepository
                 if (
                     $rdv->getMedecin() === $medecin
                     && $rdv->getDateHeure() > $now
-                    && $rdv->getStatut() === 'confirme'  // ✅ Seulement RDV confirmés
+                    && $rdv->getStatut() === 'confirme'
                 ) {
                     $upcomingRdvs[] = $rdv;
                 }

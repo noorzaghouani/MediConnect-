@@ -56,6 +56,7 @@
         <!-- Consultation Form -->
         <div class="panel">
             <form method="POST" action="{{ path('app_consultation_new', {'id': rendezVous.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('consultation_new_' ~ rendezVous.id) }}">
                 
                 <!-- Anamnèse Section -->
                 <div class="consultation-section-header">

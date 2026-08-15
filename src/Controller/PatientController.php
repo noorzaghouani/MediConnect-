@@ -206,6 +206,11 @@ class PatientController extends AbstractController
         /** @var \App\Entity\Patient $patient */
         $patient = $this->getUser();
 
+        if (!$this->isCsrfTokenValid('patient_edit_profile', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_patient_dashboard');
+        }
+
         $data = $request->request->all();
 
         // Update personal information
@@ -242,10 +247,14 @@ class PatientController extends AbstractController
         return $this->redirectToRoute('app_patient_dashboard');
     }
     #[Route('/patient/rdv/reserver/{id}', name: 'app_patient_rdv_reserver', methods: ['POST'])]
-    public function reserverRdv(int $id, EntityManagerInterface $em): JsonResponse
+    public function reserverRdv(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
         /** @var \App\Entity\Patient $patient */
         $patient = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('reserver_rdv_' . $id, $request->request->get('_token'))) {
+            return new JsonResponse(['success' => false, 'message' => 'Token de sécurité invalide.'], 403);
+        }
 
         // Récupérer la disponibilité
         $disponibilite = $em->getRepository(\App\Entity\Disponibilite::class)->find($id);

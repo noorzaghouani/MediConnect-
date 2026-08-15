@@ -46,7 +46,7 @@ class CreateDemoUsersCommand extends Command
             $admin->setPassword($hashedPassword);
 
             $this->entityManager->persist($admin);
-            $output->writeln("✅ Admin créé: $adminEmail / admin123");
+            $output->writeln("[OK] Admin cree: $adminEmail / admin123");
         } else {
             $output->writeln("ℹ️  Admin existe déjà.");
         }
@@ -77,7 +77,7 @@ class CreateDemoUsersCommand extends Command
             $medecin->setPassword($hashedPassword);
 
             $this->entityManager->persist($medecin);
-            $output->writeln("✅ Médecin créé: $medecinEmail / medecin123");
+            $output->writeln("[OK] Medecin cree: $medecinEmail / medecin123");
         } else {
             $output->writeln("ℹ️  Médecin existe déjà.");
         }

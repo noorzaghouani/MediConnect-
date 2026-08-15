@@ -9,11 +9,12 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 #[AsCommand(
     name: 'app:create-admin',
-    description: 'Créer un compte administrateur par défaut',
+    description: 'Créer un compte administrateur',
 )]
 class CreateAdminCommand extends Command
 {
@@ -36,20 +37,64 @@ class CreateAdminCommand extends Command
             return Command::SUCCESS;
         }
 
-        // Créer un nouvel administrateur
+        $io->title('Création du compte administrateur MediConnect');
+
+        $helper = $this->getHelper('question');
+
+        $emailQuestion = new Question('Email de l\'administrateur : ');
+        $emailQuestion->setValidator(function ($value) {
+            if (empty(trim($value))) {
+                throw new \RuntimeException('L\'email ne peut pas être vide.');
+            }
+            if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                throw new \RuntimeException('Email invalide.');
+            }
+            return $value;
+        });
+        $email = $helper->ask($input, $output, $emailQuestion);
+
+        $nomQuestion = new Question('Nom : ');
+        $nomQuestion->setValidator(fn($v) => !empty(trim($v)) ? $v : throw new \RuntimeException('Le nom est requis.'));
+        $nom = $helper->ask($input, $output, $nomQuestion);
+
+        $prenomQuestion = new Question('Prénom : ');
+        $prenomQuestion->setValidator(fn($v) => !empty(trim($v)) ? $v : throw new \RuntimeException('Le prénom est requis.'));
+        $prenom = $helper->ask($input, $output, $prenomQuestion);
+
+        $telephoneQuestion = new Question('Téléphone (format international ex: +33612345678) : ');
+        $telephone = $helper->ask($input, $output, $telephoneQuestion);
+
+        $passwordQuestion = new Question('Mot de passe (min. 12 caractères) : ');
+        $passwordQuestion->setHidden(true);
+        $passwordQuestion->setHiddenFallback(false);
+        $passwordQuestion->setValidator(function ($value) {
+            if (strlen($value) < 12) {
+                throw new \RuntimeException('Le mot de passe doit contenir au moins 12 caractères.');
+            }
+            return $value;
+        });
+        $plainPassword = $helper->ask($input, $output, $passwordQuestion);
+
+        $confirmQuestion = new Question('Confirmer le mot de passe : ');
+        $confirmQuestion->setHidden(true);
+        $confirmQuestion->setHiddenFallback(false);
+        $confirm = $helper->ask($input, $output, $confirmQuestion);
+
+        if ($plainPassword !== $confirm) {
+            $io->error('Les mots de passe ne correspondent pas.');
+            return Command::FAILURE;
+        }
+
+        // Créer l'administrateur
         $admin = new Administrateur();
-        $admin->setEmail('admin@mediconnect.com');
-        $admin->setNom('Admin');
-        $admin->setPrenom('MediConnect');
-        $admin->setTelephone('+21612345678');
+        $admin->setEmail($email);
+        $admin->setNom($nom);
+        $admin->setPrenom($prenom);
+        $admin->setTelephone($telephone ?? '+33000000000');
         $admin->setGenre('homme');
         $admin->setDateNaissance(new \DateTime('1990-01-01'));
 
-        // Hash le mot de passe
-        $hashedPassword = $this->passwordHasher->hashPassword(
-            $admin,
-            'admin123' // Mot de passe par défaut
-        );
+        $hashedPassword = $this->passwordHasher->hashPassword($admin, $plainPassword);
         $admin->setPassword($hashedPassword);
 
         $this->entityManager->persist($admin);
@@ -59,13 +104,11 @@ class CreateAdminCommand extends Command
         $io->table(
             ['Champ', 'Valeur'],
             [
-                ['Email', 'admin@mediconnect.com'],
-                ['Mot de passe', 'admin123'],
+                ['Email', $email],
+                ['Nom', $nom . ' ' . $prenom],
                 ['Rôle', 'ROLE_ADMIN']
             ]
         );
-
-        $io->warning('IMPORTANT: Changez le mot de passe après la première connexion !');
 
         return Command::SUCCESS;
     }

@@ -87,6 +87,7 @@
                     <i class="fas fa-print"></i> Imprimer
                 </button>
                 <form method="POST" action="{{ path('app_medecin_ordonnance_delete', {'id': ordonnance.id}) }}" class="inline-form" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette ordonnance ?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('ordonnance_delete_' ~ ordonnance.id) }}">
                     <button type="submit" class="btn-delete-ord">
                         <i class="fas fa-trash"></i> Supprimer
                     </button>

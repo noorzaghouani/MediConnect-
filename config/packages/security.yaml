@@ -21,6 +21,10 @@ security:
             custom_authenticator: App\Security\LoginAuthenticator
             logout:
                 path: app_logout
+            # ✅ SÉCURITÉ : Anti-brute force — max 5 tentatives par minute par IP
+            login_throttling:
+                max_attempts: 5
+                interval: '1 minute'
 
     access_control:
         - { path: ^/login, roles: PUBLIC_ACCESS }
@@ -28,3 +32,5 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/patient, roles: ROLE_PATIENT }
         - { path: ^/medecin, roles: ROLE_MEDECIN }
+        # ✅ SÉCURITÉ : API disponibilités accessible uniquement aux patients authentifiés
+        - { path: ^/api, roles: ROLE_PATIENT }

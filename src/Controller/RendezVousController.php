@@ -7,12 +7,10 @@ use App\Entity\RendezVous;
 use App\Entity\Patient;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
-
-
 
 class RendezVousController extends AbstractController
 {
@@ -21,6 +19,11 @@ class RendezVousController extends AbstractController
     {
         /** @var Patient $patient */
         $patient = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('book_rdv_js', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_patient_dashboard');
+        }
 
         // Récupérer la disponibilité manuellement
         $disponibilite = $entityManager->getRepository(Disponibilite::class)->find($id);
@@ -41,7 +44,7 @@ class RendezVousController extends AbstractController
         $rdv->setPatient($patient);
         $rdv->setMedecin($disponibilite->getMedecin());
         $rdv->setDateHeure($disponibilite->getDateDebut());
-        $rdv->setStatut(RendezVous::STATUT_ATTENTE); // Initialement "En attente"
+        $rdv->setStatut(RendezVous::STATUT_ATTENTE);
 
         // Calculer la durée en minutes (entier)
         $diff = $disponibilite->getDateFin()->getTimestamp() - $disponibilite->getDateDebut()->getTimestamp();
@@ -56,14 +59,19 @@ class RendezVousController extends AbstractController
 
         $this->addFlash('success', 'Votre demande de rendez-vous a été envoyée. En attente de confirmation.');
 
-        // Création du Cookie "Dernier Médecin"
         $response = $this->redirectToRoute('app_patient_dashboard');
 
-        // Le cookie expire dans 30 jours (3600 * 24 * 30)
-        $cookie = \Symfony\Component\HttpFoundation\Cookie::create(
+        $isSecure = $request->isSecure();
+        $cookie = Cookie::create(
             'last_doctor_id',
             $disponibilite->getMedecin()->getId(),
-            time() + (3600 * 24 * 30)
+            time() + (3600 * 24 * 30),
+            '/',
+            null,
+            $isSecure,   // secure : true uniquement en HTTPS
+            true,        // httpOnly : inaccessible au JS
+            false,
+            Cookie::SAMESITE_LAX
         );
 
         $response->headers->setCookie($cookie);
@@ -72,19 +80,39 @@ class RendezVousController extends AbstractController
     }
 
     #[Route('/patient/cancel/{id}', name: 'app_patient_cancel_appointment', methods: ['POST'])]
-    public function cancel(RendezVous $rendezVous, EntityManagerInterface $entityManager): Response
+    public function cancel(int $id, Request $request, EntityManagerInterface $entityManager): Response
     {
+        /** @var Patient $patient */
+        $patient = $this->getUser();
+
+        if (!$this->isCsrfTokenValid('cancel_rdv_js', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_patient_dashboard');
+        }
+
+        $rendezVous = $entityManager->getRepository(RendezVous::class)->find($id);
+
+        if (!$rendezVous) {
+            $this->addFlash('error', 'Rendez-vous non trouvé.');
+            return $this->redirectToRoute('app_patient_dashboard');
+        }
+
         // Vérifier que le RDV appartient bien au patient connecté
-        if ($rendezVous->getPatient() !== $this->getUser()) {
+        if ($rendezVous->getPatient() !== $patient) {
             throw $this->createAccessDeniedException();
         }
 
         $rendezVous->setStatut(RendezVous::STATUT_ANNULE);
 
-        // Libérer le créneau de disponibilité associé si possible
-        // Note: Cela suppose qu'on puisse retrouver la disponibilité originale. 
-        // Si elle n'est pas liée directement, on pourrait rechercher par date/médecin.
-        // Pour l'instant, on change juste le statut du RDV.
+        // Rechercher la disponibilité par médecin + date de début
+        $disponibilite = $entityManager->getRepository(Disponibilite::class)->findOneBy([
+            'medecin'   => $rendezVous->getMedecin(),
+            'dateDebut' => $rendezVous->getDateHeure(),
+        ]);
+
+        if ($disponibilite) {
+            $disponibilite->setEstDisponible(true);
+        }
 
         $entityManager->flush();
 
@@ -93,9 +121,13 @@ class RendezVousController extends AbstractController
     }
 
     #[Route('/medecin/confirm/{id}', name: 'app_medecin_confirm_appointment', methods: ['POST'])]
-    public function confirm(int $id, EntityManagerInterface $entityManager): Response
+    public function confirm(int $id, Request $request, EntityManagerInterface $entityManager): Response
     {
-        // Récupérer le RDV manuellement
+        if (!$this->isCsrfTokenValid('confirm_rdv_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_medecin_dashboard');
+        }
+
         $rendezVous = $entityManager->getRepository(RendezVous::class)->find($id);
 
         if (!$rendezVous) {
@@ -116,9 +148,13 @@ class RendezVousController extends AbstractController
     }
 
     #[Route('/medecin/reject/{id}', name: 'app_medecin_reject_appointment', methods: ['POST'])]
-    public function reject(int $id, EntityManagerInterface $entityManager): Response
+    public function reject(int $id, Request $request, EntityManagerInterface $entityManager): Response
     {
-        // Récupérer le RDV manuellement
+        if (!$this->isCsrfTokenValid('reject_rdv_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_medecin_dashboard');
+        }
+
         $rendezVous = $entityManager->getRepository(RendezVous::class)->find($id);
 
         if (!$rendezVous) {
@@ -132,6 +168,15 @@ class RendezVousController extends AbstractController
         }
 
         $rendezVous->setStatut(RendezVous::STATUT_ANNULE);
+
+        $disponibilite = $entityManager->getRepository(Disponibilite::class)->findOneBy([
+            'medecin'   => $rendezVous->getMedecin(),
+            'dateDebut' => $rendezVous->getDateHeure(),
+        ]);
+        if ($disponibilite) {
+            $disponibilite->setEstDisponible(true);
+        }
+
         $entityManager->flush();
 
         $this->addFlash('success', 'Rendez-vous refusé.');
@@ -141,10 +186,16 @@ class RendezVousController extends AbstractController
     #[Route('/api/medecin/{id}/disponibilites', name: 'api_medecin_disponibilites', methods: ['GET'])]
     public function getMedecinDisponibilites(int $id, EntityManagerInterface $entityManager): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_PATIENT');
+
         $medecin = $entityManager->getRepository(\App\Entity\Medecin::class)->find($id);
 
         if (!$medecin) {
             return $this->json(['error' => 'Médecin non trouvé'], 404);
+        }
+
+        if (!$medecin->isEstVerifie()) {
+            return $this->json(['error' => 'Médecin non disponible'], 403);
         }
 
         // Récupérer les disponibilités futures et libres
@@ -162,9 +213,9 @@ class RendezVousController extends AbstractController
         $data = [];
         foreach ($disponibilites as $d) {
             $data[] = [
-                'id' => $d->getId(),
-                'start' => $d->getDateDebut()->format('Y-m-d H:i'),
-                'end' => $d->getDateFin()->format('Y-m-d H:i'),
+                'id'           => $d->getId(),
+                'start'        => $d->getDateDebut()->format('Y-m-d H:i'),
+                'end'          => $d->getDateFin()->format('Y-m-d H:i'),
                 'display_date' => $d->getDateDebut()->format('d/m/Y'),
                 'display_time' => $d->getDateDebut()->format('H:i') . ' - ' . $d->getDateFin()->format('H:i')
             ];

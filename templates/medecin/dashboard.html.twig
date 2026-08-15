@@ -93,13 +93,13 @@
                                 {% if rdv.statut == 'en_attente' %}
                                     {# Boutons pour confirmer ou refuser le RDV #}
                                     <form method="POST" action="{{ path('app_medecin_confirm_appointment', {'id': rdv.id}) }}" class="inline-form">
-                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('medecin_appointment') }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('confirm_rdv_' ~ rdv.id) }}">
                                         <button type="submit" class="action-btn btn-success">
                                             <i class="fas fa-check"></i> Confirmer
                                         </button>
                                     </form>
                                     <form method="POST" action="{{ path('app_medecin_reject_appointment', {'id': rdv.id}) }}" class="inline-form">
-                                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('medecin_appointment') }}">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('reject_rdv_' ~ rdv.id) }}">
                                         <button type="submit" class="action-btn btn-danger">
                                             <i class="fas fa-times"></i> Refuser
                                         </button>
@@ -141,7 +141,7 @@
 
             <div class="modal-body-white">
                 <form action="{{ path('app_medecin_edit_profile') }}" method="POST">
-                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('medecin_edit_profile') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('medecin_edit_profile') }}">
                     
                     <!-- Section: Informations Personnelles -->
                     <div class="section-header-teal">

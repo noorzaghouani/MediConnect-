@@ -53,7 +53,9 @@ class MedecinRepository extends ServiceEntityRepository
                 ->setParameter('specialite', '%' . trim($specialite) . '%');
         }
 
-        return $qb->orderBy('m.nom', 'ASC')
+        return $qb->andWhere('m.estVerifie = :verifie')
+            ->setParameter('verifie', true)
+            ->orderBy('m.nom', 'ASC')
             ->setMaxResults(20)
             ->getQuery()
             ->getResult();

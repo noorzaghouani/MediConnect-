@@ -130,52 +130,74 @@ document.addEventListener('DOMContentLoaded', function () {
     function displayResults(doctors, count) {
         if (!resultsList || !resultsCount) return;
 
-        resultsCount.textContent = `(${count} résultat${count > 1 ? 's' : ''})`;
+        resultsCount.textContent = `(${count} r\u00e9sultat${count > 1 ? 's' : ''})`;
 
         if (count === 0) {
-            resultsList.innerHTML = `
-                <div class="no-results">
-                    <i class="fas fa-search"></i>
-                    <p>Aucun médecin trouvé pour cette recherche</p>
-                </div>
-            `;
+            resultsList.innerHTML = '';
+            const noRes = document.createElement('div');
+            noRes.className = 'no-results';
+            noRes.innerHTML = '<i class="fas fa-search"></i>';
+            const p = document.createElement('p');
+            p.textContent = 'Aucun m\u00e9decin trouv\u00e9 pour cette recherche';
+            noRes.appendChild(p);
+            resultsList.appendChild(noRes);
             return;
         }
 
-        resultsList.innerHTML = doctors.map(doc => `
-            <div class="doctor-card">
-                <div class="doctor-card-info">
-                    <div class="doctor-card-avatar">
-                        <i class="fas fa-user-md"></i>
-                    </div>
-                    <div class="doctor-card-details">
-                        <h4>Dr. ${doc.prenom} ${doc.nom}</h4>
-                        <p><i class="fas fa-stethoscope"></i> ${doc.specialite}</p>
-                        ${doc.telephone ? `<p><i class="fas fa-phone"></i> ${doc.telephone}</p>` : ''}
-                    </div>
-                </div>
-                <button class="btn-rdv" data-medecin-id="${doc.id}">
-                    <i class="fas fa-calendar-plus"></i>
-                    Prendre RDV
-                </button>
-            </div>
-        `).join('');
+        resultsList.innerHTML = '';
+        doctors.forEach(doc => {
+            const card = document.createElement('div');
+            card.className = 'doctor-card';
 
-        // Add click handlers for RDV buttons
-        resultsList.querySelectorAll('.btn-rdv').forEach(btn => {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'doctor-card-info';
+
+            const avatarDiv = document.createElement('div');
+            avatarDiv.className = 'doctor-card-avatar';
+            avatarDiv.innerHTML = '<i class="fas fa-user-md"></i>';
+
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'doctor-card-details';
+
+            const h4 = document.createElement('h4');
+            h4.textContent = `Dr. ${doc.prenom} ${doc.nom}`;
+
+            const pSpec = document.createElement('p');
+            pSpec.innerHTML = '<i class="fas fa-stethoscope"></i> ';
+            const specSpan = document.createElement('span');
+            specSpan.textContent = doc.specialite;
+            pSpec.appendChild(specSpan);
+
+            detailsDiv.appendChild(h4);
+            detailsDiv.appendChild(pSpec);
+
+            if (doc.telephone) {
+                const pTel = document.createElement('p');
+                pTel.innerHTML = '<i class="fas fa-phone"></i> ';
+                const telSpan = document.createElement('span');
+                telSpan.textContent = doc.telephone;
+                pTel.appendChild(telSpan);
+                detailsDiv.appendChild(pTel);
+            }
+
+            infoDiv.appendChild(avatarDiv);
+            infoDiv.appendChild(detailsDiv);
+
+            const btn = document.createElement('button');
+            btn.className = 'btn-rdv';
+            btn.dataset.medecinId = doc.id;
+            btn.innerHTML = '<i class="fas fa-calendar-plus"></i> Prendre RDV';
             btn.addEventListener('click', function () {
-                const medecinId = this.getAttribute('data-medecin-id');
-                const doctorName = this.closest('.doctor-card').querySelector('h4').textContent;
-
-                // Mettre à jour le menu actif
+                const doctorName = h4.textContent;
                 document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
                 const prendreRdvLink = document.querySelector('.nav-menu .nav-item:nth-child(2) .nav-link');
-                if (prendreRdvLink) {
-                    prendreRdvLink.classList.add('active');
-                }
-
-                showAvailabilityModal(medecinId, doctorName);
+                if (prendreRdvLink) prendreRdvLink.classList.add('active');
+                showAvailabilityModal(doc.id, doctorName);
             });
+
+            card.appendChild(infoDiv);
+            card.appendChild(btn);
+            resultsList.appendChild(card);
         });
     }
 
@@ -267,6 +289,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const form = document.createElement('form');
             form.method = 'POST';
             form.action = `/patient/book/${slotId}`;
+
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (csrfMeta) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfMeta.getAttribute('content');
+                form.appendChild(csrfInput);
+            }
+
             document.body.appendChild(form);
             form.submit();
         }
@@ -274,12 +306,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showError(message) {
         if (resultsList) {
-            resultsList.innerHTML = `
-                <div class="no-results">
-                    <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
-                    <p>${message}</p>
-                </div>
-            `;
+            resultsList.innerHTML = '';
+            const div = document.createElement('div');
+            div.className = 'no-results';
+            div.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>';
+            const p = document.createElement('p');
+            p.textContent = message;
+            div.appendChild(p);
+            resultsList.appendChild(div);
         }
     }
 
@@ -312,15 +346,23 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function (e) {
             e.preventDefault();
             const card = this.closest('.appointment-card');
-            const doctorName = card.querySelector('.doctor-info h3')?.textContent.trim() || 'ce médecin';
-            const rdvId = this.getAttribute('data-id'); // Il faudra ajouter cet attribut dans le twig
+            const doctorName = card.querySelector('.doctor-info h3')?.textContent.trim() || 'ce m\u00e9decin';
+            const rdvId = this.getAttribute('data-id');
 
             if (confirm(`Voulez-vous vraiment annuler le rendez-vous avec ${doctorName} ?`)) {
-
-                // Créer un formulaire pour soumettre la requête POST
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = `/patient/cancel/${rdvId}`;
+
+                const csrfMeta = document.querySelector('meta[name="csrf-token-cancel"]');
+                if (csrfMeta) {
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = csrfMeta.getAttribute('content');
+                    form.appendChild(csrfInput);
+                }
+
                 document.body.appendChild(form);
                 form.submit();
             }

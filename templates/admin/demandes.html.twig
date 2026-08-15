@@ -85,6 +85,7 @@
                                         <form action="{{ path('app_admin_valider_medecin', {'id': medecin.id}) }}" 
                                               method="post" 
                                               id="form-approve-{{ medecin.id }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('valider_medecin_' ~ medecin.id) }}">
                                             <select name="specialite" required class="select-field">
                                                 <option value="">-- Choisir Spécialité --</option>
                                                 {% for spec in specialites %}
@@ -112,6 +113,7 @@
                                                   method="post" 
                                                   onsubmit="return confirm('Voulez-vous vraiment refuser ce médecin ?');"
                                                   class="inline-form">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('refuser_medecin_' ~ medecin.id) }}">
                                                 <button type="submit" class="btn btn-reject" title="Refuser">
                                                     <i class="fas fa-times"></i> Rejeter
                                                 </button>

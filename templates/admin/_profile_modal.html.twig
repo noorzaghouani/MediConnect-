@@ -15,6 +15,7 @@
         <!-- Body -->
         <div class="modal-body">
             <form action="{{ path('app_admin_update_profile') }}" method="POST">
+                <input type="hidden" name="_token" value="{{ csrf_token('admin_update_profile') }}">
                 
                 <!-- Section: Personal Info -->
                 <div class="section-title">

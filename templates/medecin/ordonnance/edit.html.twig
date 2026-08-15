@@ -30,6 +30,7 @@
         <div class="panel">
             <div class="ordonnance-form-container">
                 <form method="POST" action="{{ path('app_medecin_ordonnance_edit', {'id': ordonnance.id}) }}" id="ordonnanceEditForm">
+                    <input type="hidden" name="_token" value="{{ csrf_token('ordonnance_edit_' ~ ordonnance.id) }}">
                     
                     <!-- Patient Info (readonly) -->
                     <div class="form-section">
@@ -78,7 +79,7 @@
     <script>
         // Parse existing ordonnance content and populate form
         document.addEventListener('DOMContentLoaded', function() {
-            const existingContent = `{{ ordonnance.contenu|raw }}`;
+            const existingContent = {{ ordonnance.contenu|json_encode|raw }};
             
             // Parse the content to extract medications
             const lines = existingContent.trim().split('\n');

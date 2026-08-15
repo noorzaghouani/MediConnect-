@@ -79,7 +79,10 @@
                                     <button class="btn btn-view" onclick="openPatientModal('{{ patient.prenom }} {{ patient.nom }}', '{{ patient.email }}', '{{ patient.telephone }}')">
                                         <i class="fas fa-eye"></i> Voir
                                     </button>
-                                    <button class="btn btn-delete" onclick="confirmDeletePatient({{ patient.id }}, '{{ patient.prenom }} {{ patient.nom }}')">
+                                    <button class="btn btn-delete"
+                                            data-id="{{ patient.id }}"
+                                            data-csrf="{{ csrf_token('delete_patient_' ~ patient.id) }}"
+                                            onclick="confirmDeletePatient({{ patient.id }}, '{{ (patient.prenom ~ ' ' ~ patient.nom)|e('js') }}', this)">
                                         <i class="fas fa-trash"></i> Supprimer
                                     </button>
                                 </td>
@@ -169,6 +172,7 @@
                 <p class="delete-info">Cette action est <strong>irréversible</strong>. Toutes les ordonnances, dossier médical et rendez-vous associés seront également supprimés.</p>
                 
                 <form id="deletePatientForm" method="POST" action="">
+                    <input type="hidden" name="_token" id="deletePatientCsrfToken" value="">
                     <div class="modal-footer-buttons">
                         <button type="button" onclick="closeDeletePatientModal()" class="btn-modal-cancel">
                             Annuler

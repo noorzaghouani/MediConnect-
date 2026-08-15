@@ -15,10 +15,10 @@ document.addEventListener('DOMContentLoaded', function () {
         new Chart(ctxLine, {
             type: 'line',
             data: {
-                labels: labelsData,  // ✅ Labels dynamiques (jours)
+                labels: labelsData,
                 datasets: [{
                     label: 'Consultations',
-                    data: consultationsData,  // ✅ Données réelles par jour
+                    data: consultationsData,
                     borderColor: '#0d9488',
                     backgroundColor: gradient,
                     borderWidth: 3,
@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     y: {
                         beginAtZero: true,
                         grid: { borderDash: [5, 5], color: '#f1f5f9' },
-                        ticks: { stepSize: 1 }  // ✅ Afficher nombres entiers
+                        ticks: { stepSize: 1 }
                     },
                     x: { grid: { display: false } }
                 }

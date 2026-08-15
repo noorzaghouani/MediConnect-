@@ -20,6 +20,11 @@
     {% endblock %}
     
     {% block stylesheets %}{% endblock %}
+
+    {% if app.user %}
+        <meta name="csrf-token" content="{{ csrf_token('book_rdv_js') }}">
+        <meta name="csrf-token-cancel" content="{{ csrf_token('cancel_rdv_js') }}">
+    {% endif %}
 </head>
 <body>
     {% block body %}

@@ -29,14 +29,19 @@ function closeModal() {
  * Ouvre la modale de confirmation de suppression
  * @param {number} medecinId - ID du médecin à supprimer
  * @param {string} medecinName - Nom du médecin
+ * @param {HTMLElement} btn - Bouton déclencheur (contient data-csrf)
  */
-function confirmDelete(medecinId, medecinName) {
+function confirmDelete(medecinId, medecinName, btn) {
     // Mettre à jour le nom dans la modale
     document.getElementById('deleteMedecinName').textContent = medecinName;
     
     // Générer l'URL de suppression
     const deleteUrl = `/admin/medecin/${medecinId}/delete`;
     document.getElementById('deleteForm').action = deleteUrl;
+    
+    if (btn && btn.dataset.csrf) {
+        document.getElementById('deleteCsrfToken').value = btn.dataset.csrf;
+    }
     
     // Afficher la modale
     document.getElementById('deleteModal').style.display = 'flex';

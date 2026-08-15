@@ -49,7 +49,6 @@ class MedecinController extends AbstractController
             return $this->render('medecin/pending_verification.html.twig');
         }
 
-        // ✅ OPTIMISÉ: Utilise la méthode repository qui évite les requêtes N+1
         $patientsWithRdv = $entityManager->getRepository(Patient::class)
             ->findPatientsWithNextRdvByMedecin($medecin);
 
@@ -71,6 +70,10 @@ class MedecinController extends AbstractController
             return $this->render('medecin/pending_verification.html.twig');
         }
 
+        if (!$this->isCsrfTokenValid('medecin_edit_profile', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_medecin_dashboard');
+        }
         $nom = $request->request->get('nom');
         $prenom = $request->request->get('prenom');
         $telephone = $request->request->get('telephone');
@@ -216,13 +219,18 @@ class MedecinController extends AbstractController
     }
 
     #[Route('/medecin/disponibilites/{id}/delete', name: 'app_medecin_disponibilite_delete', methods: ['POST'])]
-    public function deleteDisponibilite(int $id, EntityManagerInterface $em): Response
+    public function deleteDisponibilite(int $id, Request $request, EntityManagerInterface $em): Response
     {
         /** @var Medecin $medecin */
         $medecin = $this->getUser();
 
         if (!$medecin->isEstVerifie()) {
             return $this->redirectToRoute('app_medecin_dashboard');
+        }
+
+        if (!$this->isCsrfTokenValid('delete_disponibilite_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_medecin_disponibilites');
         }
 
         $disponibilite = $em->getRepository(Disponibilite::class)->find($id);
@@ -243,7 +251,7 @@ class MedecinController extends AbstractController
 
             $this->addFlash('success', 'Disponibilité supprimée avec succès');
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+            $this->addFlash('error', 'Erreur lors de la suppression.');
         }
 
         return $this->redirectToRoute('app_medecin_disponibilites');

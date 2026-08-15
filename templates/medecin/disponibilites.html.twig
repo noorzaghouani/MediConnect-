@@ -153,6 +153,7 @@
                                     <td class="text-end pe-4">
                                         {% if dispo.estDisponible %}
                                             <form method="POST" action="{{ path('app_medecin_disponibilite_delete', {id: dispo.id}) }}" class="inline-form" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette disponibilité ?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete_disponibilite_' ~ dispo.id) }}">
                                                 <button type="submit" class="btn btn-sm btn-danger" title="Supprimer">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>

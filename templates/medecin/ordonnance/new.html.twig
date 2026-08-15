@@ -30,6 +30,7 @@
         <div class="panel">
             <div class="ordonnance-form-container">
                 <form method="POST" action="{{ path('app_medecin_ordonnance_new') }}" id="ordonnanceForm">
+                    <input type="hidden" name="_token" value="{{ csrf_token('ordonnance_new') }}">
                     
                     <!-- Patient Selection -->
                     <div class="form-section">

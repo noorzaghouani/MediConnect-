@@ -55,7 +55,6 @@ class AdminController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        // ✅ NOUVEAU: Consultations par Jour (7 derniers jours - Données réelles)
         $consultationsParJour = [];
         $labelsJours = [];
 
@@ -86,8 +85,8 @@ class AdminController extends AbstractController
             'nbConsultations' => $nbConsultations,
             'nbConsultationsJour' => $nbConsultationsJour,
             'repartitionSpecialites' => $repartitionSpecialites,
-            'consultationsParJour' => $consultationsParJour,  // ✅ Données réelles par jour
-            'labelsJours' => $labelsJours,  // ✅ Labels jours
+            'consultationsParJour' => $consultationsParJour,
+            'labelsJours' => $labelsJours,
             'medecinsNonVerifies' => $medecinsNonVerifies,
         ]);
     }
@@ -130,6 +129,11 @@ class AdminController extends AbstractController
     #[Route('/medecin/{id}/valider', name: 'app_admin_valider_medecin', methods: ['POST'])]
     public function validerMedecin(Request $request, int $id, EntityManagerInterface $em): Response
     {
+        if (!$this->isCsrfTokenValid('valider_medecin_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
         $medecin = $em->getRepository(Medecin::class)->find($id);
 
         if (!$medecin) {
@@ -152,8 +156,13 @@ class AdminController extends AbstractController
     }
 
     #[Route('/medecin/{id}/refuser', name: 'app_admin_refuser_medecin', methods: ['POST'])]
-    public function refuserMedecin(int $id, EntityManagerInterface $em): Response
+    public function refuserMedecin(int $id, Request $request, EntityManagerInterface $em): Response
     {
+        if (!$this->isCsrfTokenValid('refuser_medecin_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
         $medecin = $em->getRepository(Medecin::class)->find($id);
 
         if (!$medecin) {
@@ -168,8 +177,13 @@ class AdminController extends AbstractController
     }
 
     #[Route('/medecin/{id}/delete', name: 'app_admin_delete_medecin', methods: ['POST'])]
-    public function deleteMedecin(int $id, EntityManagerInterface $em): Response
+    public function deleteMedecin(int $id, Request $request, EntityManagerInterface $em): Response
     {
+        if (!$this->isCsrfTokenValid('delete_medecin_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_admin_medecins');
+        }
+
         $medecin = $em->getRepository(Medecin::class)->find($id);
 
         if (!$medecin) {
@@ -178,16 +192,12 @@ class AdminController extends AbstractController
         }
 
         try {
-            // Récupérer le nom pour le message
             $nomComplet = 'Dr. ' . $medecin->getPrenom() . ' ' . $medecin->getNom();
-
-            // Suppression avec cascade automatique (Doctrine gère les entités liées)
             $em->remove($medecin);
             $em->flush();
-
             $this->addFlash('success', $nomComplet . ' a été supprimé avec succès.');
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+            $this->addFlash('error', 'Une erreur est survenue lors de la suppression.');
         }
 
         return $this->redirectToRoute('app_admin_medecins');
@@ -196,6 +206,11 @@ class AdminController extends AbstractController
     #[Route('/profile/update', name: 'app_admin_update_profile', methods: ['POST'])]
     public function updateProfile(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): Response
     {
+        if (!$this->isCsrfTokenValid('admin_update_profile', $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
         /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
@@ -203,28 +218,22 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        if ($request->isMethod('POST')) {
-            $nom = $request->request->get('nom');
-            $prenom = $request->request->get('prenom');
-            $telephone = $request->request->get('telephone');
-            $newPassword = $request->request->get('new_password');
+        $nom = $request->request->get('nom');
+        $prenom = $request->request->get('prenom');
+        $telephone = $request->request->get('telephone');
+        $newPassword = $request->request->get('new_password');
 
-            if ($nom)
-                $user->setNom($nom);
-            if ($prenom)
-                $user->setPrenom($prenom);
-            if ($telephone)
-                $user->setTelephone($telephone);
+        if ($nom) $user->setNom($nom);
+        if ($prenom) $user->setPrenom($prenom);
+        if ($telephone) $user->setTelephone($telephone);
 
-            if (!empty($newPassword)) {
-                $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
-                $user->setPassword($hashedPassword);
-            }
-
-            $em->flush();
-            $this->addFlash('success', 'Profil modifié avec succès !');
-
+        if (!empty($newPassword)) {
+            $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
+            $user->setPassword($hashedPassword);
         }
+
+        $em->flush();
+        $this->addFlash('success', 'Profil modifié avec succès !');
 
         return $this->redirectToRoute('app_admin_dashboard');
     }
@@ -252,8 +261,13 @@ class AdminController extends AbstractController
     }
 
     #[Route('/patient/{id}/delete', name: 'app_admin_delete_patient', methods: ['POST'])]
-    public function deletePatient(int $id, EntityManagerInterface $em): Response
+    public function deletePatient(int $id, Request $request, EntityManagerInterface $em): Response
     {
+        if (!$this->isCsrfTokenValid('delete_patient_' . $id, $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token de sécurité invalide.');
+            return $this->redirectToRoute('app_admin_patients');
+        }
+
         $patient = $em->getRepository(Patient::class)->find($id);
 
         if (!$patient) {
@@ -262,16 +276,12 @@ class AdminController extends AbstractController
         }
 
         try {
-            // Récupérer le nom pour le message
             $nomComplet = $patient->getPrenom() . ' ' . $patient->getNom();
-
-            // Suppression avec cascade automatique (Doctrine gère les entités liées)
             $em->remove($patient);
             $em->flush();
-
             $this->addFlash('success', $nomComplet . ' a été supprimé avec succès.');
         } catch (\Exception $e) {
-            $this->addFlash('error', 'Erreur lors de la suppression: ' . $e->getMessage());
+            $this->addFlash('error', 'Une erreur est survenue lors de la suppression.');
         }
 
         return $this->redirectToRoute('app_admin_patients');

@@ -23,16 +23,32 @@ class DossierMedicalController extends AbstractController
         if (!$medecin->isEstVerifie()) {
             return $this->render('medecin/pending_verification.html.twig');
         }
+
         // Récupérer le patient manuellement
         $patient = $em->getRepository(Patient::class)->find($id);
 
         // Déterminer la page de retour (dashboard ou patients)
         $from = $request->query->get('from', 'patients');
+        // Sécurisation : limiter les valeurs acceptées pour éviter une injection de route
+        $from = in_array($from, ['dashboard', 'patients'], true) ? $from : 'patients';
         $returnRoute = $from === 'dashboard' ? 'app_medecin_dashboard' : 'app_medecin_patients';
 
         if (!$patient) {
             $this->addFlash('error', 'Patient non trouvé.');
             return $this->redirectToRoute($returnRoute);
+        }
+
+        $hasRelation = $em->getRepository(RendezVous::class)->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->where('r.medecin = :medecin')
+            ->andWhere('r.patient = :patient')
+            ->setParameter('medecin', $medecin)
+            ->setParameter('patient', $patient)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        if (!$hasRelation) {
+            throw $this->createAccessDeniedException('Vous n\'avez pas accès au dossier de ce patient.');
         }
 
         $dossier = $patient->getDossierMedical();
@@ -52,7 +68,7 @@ class DossierMedicalController extends AbstractController
         ]);
     }
 
-    #[Route('/medecin/consultation/new/{id}', name: 'app_consultation_new')]
+    #[Route('/medecin/consultation/new/{id}', name: 'app_consultation_new', methods: ['GET', 'POST'])]
     public function createConsultation(int $id, Request $request, EntityManagerInterface $em): Response
     {
         /** @var \App\Entity\Medecin $medecin */
@@ -61,12 +77,17 @@ class DossierMedicalController extends AbstractController
         if (!$medecin->isEstVerifie()) {
             return $this->render('medecin/pending_verification.html.twig');
         }
+
         // Récupérer le RDV manuellement
         $rendezVous = $em->getRepository(RendezVous::class)->find($id);
 
         if (!$rendezVous) {
             $this->addFlash('error', 'Rendez-vous non trouvé.');
             return $this->redirectToRoute('app_medecin_dashboard');
+        }
+
+        if ($rendezVous->getMedecin() !== $medecin) {
+            throw $this->createAccessDeniedException('Ce rendez-vous ne vous appartient pas.');
         }
 
         $patient = $rendezVous->getPatient();
@@ -79,6 +100,11 @@ class DossierMedicalController extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('consultation_new_' . $id, $request->request->get('_token'))) {
+                $this->addFlash('error', 'Token de sécurité invalide.');
+                return $this->redirectToRoute('app_medecin_dashboard');
+            }
+
             $consultation = new Consultation();
             $consultation->setDossierMedical($dossier);
             $consultation->setMedecin($this->getUser());

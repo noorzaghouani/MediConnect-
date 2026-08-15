@@ -166,6 +166,7 @@
 
             <div class="modal-body-white">
                 <form action="{{ path('app_patient_edit_profile') }}" method="POST" id="profileForm">
+                    <input type="hidden" name="_token" value="{{ csrf_token('patient_edit_profile') }}">
                     
                     <!-- Section: Informations Personnelles -->
                     <div class="section-header-teal">

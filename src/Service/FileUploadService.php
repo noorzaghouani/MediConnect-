@@ -24,7 +24,7 @@ class FileUploadService
         }
 
         // Générer nom sécurisé
-        $fileName = md5(uniqid()) . '.' . $extension;
+        $fileName = bin2hex(random_bytes(16)) . '.' . $extension;
 
         try {
             $file->move($uploadDirectory, $fileName);
