@@ -19,17 +19,15 @@ class AdminController extends AbstractController
     #[Route('/dashboard', name: 'app_admin_dashboard')]
     public function dashboard(EntityManagerInterface $em): Response
     {
-        // Statistiques
-        $medecinRepo = $em->getRepository(Medecin::class);
-        $patientRepo = $em->getRepository(Patient::class);
+        $medecinRepo      = $em->getRepository(Medecin::class);
+        $patientRepo      = $em->getRepository(Patient::class);
         $consultationRepo = $em->getRepository(Consultation::class);
 
-        $nbMedecins = $medecinRepo->count([]);
-        $nbPatients = $patientRepo->count([]);
+        $nbMedecins      = $medecinRepo->count([]);
+        $nbPatients      = $patientRepo->count([]);
         $nbConsultations = $consultationRepo->count([]);
 
-        // Consultations d'aujourd'hui (Approximation, idéalement une requête custom)
-        $today = new \DateTime('today');
+        $today    = new \DateTime('today');
         $tomorrow = new \DateTime('tomorrow');
         $nbConsultationsJour = $consultationRepo->createQueryBuilder('c')
             ->select('count(c.id)')
@@ -40,13 +38,9 @@ class AdminController extends AbstractController
             ->getQuery()
             ->getSingleScalarResult();
 
-        // Récupérer les médecins non vérifiés
         $medecinsNonVerifies = $medecinRepo->findBy(['estVerifie' => false]);
+        $specialites         = $em->getRepository(Speciality::class)->findAll();
 
-        // Récupérer toutes les spécialités pour le dropdown
-        $specialites = $em->getRepository(Speciality::class)->findAll();
-
-        // Répartition par spécialité (Optimisé pour Doughnut Chart)
         $repartitionSpecialites = $medecinRepo->createQueryBuilder('m')
             ->select('s.nom as specialite, COUNT(m.id) as total')
             ->leftJoin('m.specialite', 's')
@@ -59,11 +53,10 @@ class AdminController extends AbstractController
         $labelsJours = [];
 
         for ($i = 6; $i >= 0; $i--) {
-            $date = new \DateTime("-$i days");
+            $date     = new \DateTime("-$i days");
             $dateDebut = (clone $date)->setTime(0, 0, 0);
-            $dateFin = (clone $date)->setTime(23, 59, 59);
+            $dateFin   = (clone $date)->setTime(23, 59, 59);
 
-            // Compter consultations de ce jour
             $nbConsult = $consultationRepo->createQueryBuilder('c')
                 ->select('COUNT(c.id)')
                 ->where('c.date >= :debut')
@@ -74,55 +67,59 @@ class AdminController extends AbstractController
                 ->getSingleScalarResult();
 
             $consultationsParJour[] = $nbConsult;
-
-            // Format label: "Lun 06/01" 
-            $labelsJours[] = $date->format('D d/m');
+            $labelsJours[]          = $date->format('D d/m');
         }
 
         return $this->render('admin/dashboard.html.twig', [
-            'nbMedecins' => $nbMedecins,
-            'nbPatients' => $nbPatients,
-            'nbConsultations' => $nbConsultations,
-            'nbConsultationsJour' => $nbConsultationsJour,
+            'nbMedecins'             => $nbMedecins,
+            'nbPatients'             => $nbPatients,
+            'nbConsultations'        => $nbConsultations,
+            'nbConsultationsJour'    => $nbConsultationsJour,
             'repartitionSpecialites' => $repartitionSpecialites,
-            'consultationsParJour' => $consultationsParJour,
-            'labelsJours' => $labelsJours,
-            'medecinsNonVerifies' => $medecinsNonVerifies,
+            'consultationsParJour'   => $consultationsParJour,
+            'labelsJours'            => $labelsJours,
+            'medecinsNonVerifies'    => $medecinsNonVerifies,
         ]);
     }
 
     #[Route('/medecins', name: 'app_admin_medecins')]
     public function medecins(Request $request, EntityManagerInterface $em): Response
     {
-        $searchTerm = $request->query->get('q');
+        $searchTerm  = $request->query->get('q');
         $medecinRepo = $em->getRepository(Medecin::class);
+        $limit       = 15;
+        $page        = max(1, (int) $request->query->get('page', 1));
 
         if ($searchTerm) {
-            $medecins = $medecinRepo->searchByTerm($searchTerm);
+            $medecins   = $medecinRepo->searchByTerm($searchTerm);
+            $totalPages = 1;
         } else {
-            $medecins = $medecinRepo->findAll();
+            $medecins   = $medecinRepo->findPaginated($page, $limit);
+            $total      = $medecinRepo->countTotal();
+            $totalPages = (int) ceil($total / $limit);
         }
 
-        // Needed for the sidebar badge count
         $medecinsNonVerifiesCount = $medecinRepo->count(['estVerifie' => false]);
 
         return $this->render('admin/medecins.html.twig', [
-            'medecins' => $medecins,
-            'searchTerm' => $searchTerm,
-            'medecinsNonVerifiesCount' => $medecinsNonVerifiesCount
+            'medecins'                 => $medecins,
+            'searchTerm'               => $searchTerm,
+            'medecinsNonVerifiesCount' => $medecinsNonVerifiesCount,
+            'currentPage'              => $page,
+            'totalPages'               => $totalPages,
         ]);
     }
 
     #[Route('/demandes', name: 'app_admin_demandes')]
     public function demandes(EntityManagerInterface $em): Response
     {
-        $medecinRepo = $em->getRepository(Medecin::class);
+        $medecinRepo         = $em->getRepository(Medecin::class);
         $medecinsNonVerifies = $medecinRepo->findBy(['estVerifie' => false]);
-        $specialites = $em->getRepository(Speciality::class)->findAll();
+        $specialites         = $em->getRepository(Speciality::class)->findAll();
 
         return $this->render('admin/demandes.html.twig', [
             'medecinsNonVerifies' => $medecinsNonVerifies,
-            'specialites' => $specialites,
+            'specialites'         => $specialites,
         ]);
     }
 
@@ -218,13 +215,13 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        $nom = $request->request->get('nom');
-        $prenom = $request->request->get('prenom');
-        $telephone = $request->request->get('telephone');
+        $nom         = $request->request->get('nom');
+        $prenom      = $request->request->get('prenom');
+        $telephone   = $request->request->get('telephone');
         $newPassword = $request->request->get('new_password');
 
-        if ($nom) $user->setNom($nom);
-        if ($prenom) $user->setPrenom($prenom);
+        if ($nom)       $user->setNom($nom);
+        if ($prenom)    $user->setPrenom($prenom);
         if ($telephone) $user->setTelephone($telephone);
 
         if (!empty($newPassword)) {
@@ -241,22 +238,29 @@ class AdminController extends AbstractController
     #[Route('/patients', name: 'app_admin_patients')]
     public function patients(Request $request, EntityManagerInterface $em): Response
     {
-        $searchTerm = $request->query->get('q');
+        $searchTerm  = $request->query->get('q');
         $patientRepo = $em->getRepository(Patient::class);
+        $limit       = 15;
+        $page        = max(1, (int) $request->query->get('page', 1));
 
         if ($searchTerm) {
-            $patients = $patientRepo->searchByTerm($searchTerm);
+            $patients   = $patientRepo->searchByTerm($searchTerm);
+            $totalPages = 1;
         } else {
-            $patients = $patientRepo->findAll();
+            $patients   = $patientRepo->findPaginated($page, $limit);
+            $total      = $patientRepo->countTotal();
+            $totalPages = (int) ceil($total / $limit);
         }
 
-        $medecinRepo = $em->getRepository(Medecin::class);
+        $medecinRepo              = $em->getRepository(Medecin::class);
         $medecinsNonVerifiesCount = $medecinRepo->count(['estVerifie' => false]);
 
         return $this->render('admin/patients.html.twig', [
-            'patients' => $patients,
+            'patients'                 => $patients,
             'medecinsNonVerifiesCount' => $medecinsNonVerifiesCount,
-            'searchTerm' => $searchTerm
+            'searchTerm'               => $searchTerm,
+            'currentPage'              => $page,
+            'totalPages'               => $totalPages,
         ]);
     }
 

@@ -189,6 +189,18 @@
     <!-- ADMIN PROFILE MODAL -->
     {% include 'admin/_profile_modal.html.twig' %}
 
+    {% if not searchTerm and totalPages > 1 %}
+    <nav class="pagination-nav">
+        {% if currentPage > 1 %}
+            <a href="{{ path('app_admin_patients', {'page': currentPage - 1}) }}" class="page-btn">&laquo; Précédent</a>
+        {% endif %}
+        <span class="page-info">Page {{ currentPage }} / {{ totalPages }}</span>
+        {% if currentPage < totalPages %}
+            <a href="{{ path('app_admin_patients', {'page': currentPage + 1}) }}" class="page-btn">Suivant &raquo;</a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
     <!-- JavaScript for Modals -->
     <script src="{{ asset('js/admin/patient_actions.js') }}"></script>
     <script src="{{ asset('js/admin/profile_modal.js') }}"></script>

@@ -75,12 +75,12 @@
         </div>
     </main>
 
+    <div id="ordonnance-data" data-contenu="{{ ordonnance.contenu|e('html_attr') }}" style="display:none;"></div>
     <script src="{{ asset('js/medecin/ordonnance.js') }}"></script>
     <script>
-        // Parse existing ordonnance content and populate form
         document.addEventListener('DOMContentLoaded', function() {
-            const existingContent = {{ ordonnance.contenu|json_encode|raw }};
-            
+            const existingContent = document.getElementById('ordonnance-data').dataset.contenu;
+
             // Parse the content to extract medications
             const lines = existingContent.trim().split('\n');
             let currentMed = null;

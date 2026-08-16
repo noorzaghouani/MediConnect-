@@ -78,15 +78,44 @@ class MedecinRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('m')
             ->leftJoin('m.specialite', 's')
-            ->addSelect('s')  // Évite les requêtes N+1
+            ->addSelect('s')
             ->where('LOWER(m.nom) LIKE LOWER(:term)')
             ->orWhere('LOWER(m.prenom) LIKE LOWER(:term)')
             ->orWhere('LOWER(m.email) LIKE LOWER(:term)')
-            ->orWhere('LOWER(COALESCE(s.nom, \'\')) LIKE LOWER(:term)')  // Gère le cas NULL
+            ->orWhere('LOWER(COALESCE(s.nom, \'\')) LIKE LOWER(:term)')
             ->orderBy('m.nom', 'ASC')
             ->setParameter('term', '%' . $term . '%')
             ->getQuery()
             ->getResult();
     }
-}
 
+    /**
+     * Retourne une page de médecins triés par nom.
+     *
+     * @param int $page   Numéro de page (commence à 1)
+     * @param int $limit  Nombre d'entrées par page
+     * @return Medecin[]
+     */
+    public function findPaginated(int $page, int $limit = 15): array
+    {
+        return $this->createQueryBuilder('m')
+            ->leftJoin('m.specialite', 's')
+            ->addSelect('s')
+            ->orderBy('m.nom', 'ASC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne le nombre total de médecins (pour calculer le nombre de pages).
+     */
+    public function countTotal(): int
+    {
+        return (int) $this->createQueryBuilder('m')
+            ->select('COUNT(m.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+}

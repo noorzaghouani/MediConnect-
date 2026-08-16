@@ -10,11 +10,13 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\Attribute\When;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+#[When(env: 'dev')]
 #[AsCommand(
     name: 'app:create-demo-users',
-    description: 'Creates demo admin and doctor users',
+    description: 'Creates demo admin and doctor users (DEV only)',
 )]
 class CreateDemoUsersCommand extends Command
 {
@@ -79,7 +81,7 @@ class CreateDemoUsersCommand extends Command
             $this->entityManager->persist($medecin);
             $output->writeln("[OK] Medecin cree: $medecinEmail / medecin123");
         } else {
-            $output->writeln("ℹ️  Médecin existe déjà.");
+            $output->writeln(" Médecin existe déjà.");
         }
 
         $this->entityManager->flush();

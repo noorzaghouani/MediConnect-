@@ -23,23 +23,21 @@ class PatientRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve tous les patients ayant au moins un rendez-vous confirmé avec le médecin
-     * 
+     * Trouve tous les patients ayant au moins un rendez-vous confirmé avec le médecin.
      * Utilise JOIN avec addSelect pour éviter les requêtes N+1.
-     * Retourne uniquement les patients avec statut de RDV "confirmé".
-     * 
-     * @param \App\Entity\Medecin $medecin Le médecin dont on recherche les patients
-     * @return Patient[] Liste des patients distincts, triés par nom
+     *
+     * @param \App\Entity\Medecin $medecin
+     * @return Patient[]
      */
     public function findPatientsByMedecin($medecin)
     {
         return $this->createQueryBuilder('p')
             ->join('p.rendezVous', 'r')
-            ->addSelect('r')  // Évite les requêtes N+1
+            ->addSelect('r')
             ->where('r.medecin = :medecin')
             ->andWhere('r.statut = :statut')
             ->setParameter('medecin', $medecin)
-            ->setParameter('statut', RendezVous::STATUT_CONFIRME)  // Utilisation de la constante
+            ->setParameter('statut', RendezVous::STATUT_CONFIRME)
             ->distinct()
             ->orderBy('p.nom', 'ASC')
             ->getQuery()
@@ -48,15 +46,18 @@ class PatientRepository extends ServiceEntityRepository
 
     /**
      * Trouve les patients qui ont au moins une consultation avec le médecin
-     * (pour créer une ordonnance)
+     * (utilisé pour restreindre la création d'ordonnances).
+     *
+     * @param \App\Entity\Medecin $medecin
+     * @return Patient[]
      */
     public function findPatientsWithConsultationsByMedecin($medecin)
     {
         return $this->createQueryBuilder('p')
             ->join('p.dossierMedical', 'dm')
-            ->addSelect('dm')  // Évite les requêtes N+1
+            ->addSelect('dm')
             ->join('dm.consultations', 'c')
-            ->addSelect('c')  // Évite les requêtes N+1
+            ->addSelect('c')
             ->where('c.medecin = :medecin')
             ->setParameter('medecin', $medecin)
             ->distinct()
@@ -64,17 +65,12 @@ class PatientRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
     /**
-     * Recherche des patients par un terme unique
-     * 
-     *Effectue une recherche case-sensitive partielle sur:
-     * - Nom
-     * - Prénom
-     * - Email
-     * - Numéro de téléphone
-     * 
-     * @param string $term Terme de recherche (recherche partielle)
-     * @return Patient[] Liste des patients correspondants, triés par nom
+     * Recherche des patients par un terme unique (nom, prénom, email, téléphone).
+     *
+     * @param string $term
+     * @return Patient[]
      */
     public function searchByTerm(string $term): array
     {
@@ -90,24 +86,45 @@ class PatientRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve les patients d'un médecin avec leur prochain rendez-vous
-     * 
-     * Méthode optimisée pour éviter les requêtes N+1:
-     * - Charge tous les patients avec au moins un RDV confirmé
-     * - Pour chaque patient, trouve le prochain RDV à venir
-     * 
-     * Retourne un tableau associatif contenant:
-     * - 'patient': l'objet Patient
-     * - 'nextRdv': le prochain RendezVous confirmé ou null
-     * 
-     * @param \App\Entity\Medecin $medecin Le médecin concerné
-     * @return array[] Liste de tableaux ['patient' => Patient, 'nextRdv' => RendezVous|null]
+     * Retourne une page de patients triés par nom.
+     *
+     * @param int $page   Numéro de page (commence à 1)
+     * @param int $limit  Nombre d'entrées par page
+     * @return Patient[]
+     */
+    public function findPaginated(int $page, int $limit = 15): array
+    {
+        return $this->createQueryBuilder('p')
+            ->orderBy('p.nom', 'ASC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Retourne le nombre total de patients (pour calculer le nombre de pages).
+     */
+    public function countTotal(): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Trouve les patients d'un médecin avec leur prochain rendez-vous.
+     * Charge tous les RDV en une seule requête (addSelect) pour éviter les N+1.
+     *
+     * @param \App\Entity\Medecin $medecin
+     * @return array[] [['patient' => Patient, 'nextRdv' => RendezVous|null]]
      */
     public function findPatientsWithNextRdvByMedecin($medecin): array
     {
-        // Récupérer tous les patients ayant eu un RDV CONFIRMÉ avec ce médecin
         $patients = $this->createQueryBuilder('p')
             ->join('p.rendezVous', 'r')
+            ->addSelect('r')
             ->where('r.medecin = :medecin')
             ->andWhere('r.statut = :statut')
             ->setParameter('medecin', $medecin)
@@ -121,7 +138,6 @@ class PatientRepository extends ServiceEntityRepository
         $result = [];
 
         foreach ($patients as $patient) {
-            // Chercher le prochain RDV confirmé dans les RDV déjà chargés en mémoire
             $nextRdv = null;
             $upcomingRdvs = [];
 
@@ -135,7 +151,6 @@ class PatientRepository extends ServiceEntityRepository
                 }
             }
 
-            // Trier et prendre le premier
             if (!empty($upcomingRdvs)) {
                 usort($upcomingRdvs, function ($a, $b) {
                     return $a->getDateHeure() <=> $b->getDateHeure();
