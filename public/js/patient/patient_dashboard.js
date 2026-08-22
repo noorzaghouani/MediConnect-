@@ -270,16 +270,33 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                list.innerHTML = data.map(slot => `
-                    <div class="slot-btn" onclick="bookAppointment(${slot.id})">
-                        <div class="slot-date">${slot.display_date}</div>
-                        <div class="slot-time">${slot.display_time}</div>
-                    </div>
-                `).join('');
+                list.innerHTML = '';
+                data.forEach(slot => {
+                    const slotBtn = document.createElement('div');
+                    slotBtn.className = 'slot-btn';
+                    slotBtn.onclick = () => window.bookAppointment(slot.id);
+
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'slot-date';
+                    dateDiv.textContent = slot.display_date;
+
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'slot-time';
+                    timeDiv.textContent = slot.display_time;
+
+                    slotBtn.appendChild(dateDiv);
+                    slotBtn.appendChild(timeDiv);
+                    list.appendChild(slotBtn);
+                });
             })
             .catch(err => {
                 console.error('Erreur chargement disponibilités:', err);
-                list.innerHTML = `<p class="no-slots" style="color:red">Erreur: ${err.message}</p>`;
+                list.innerHTML = '';
+                const errP = document.createElement('p');
+                errP.className = 'no-slots';
+                errP.style.color = 'red';
+                errP.textContent = `Erreur: ${err.message}`;
+                list.appendChild(errP);
             });
     };
 
