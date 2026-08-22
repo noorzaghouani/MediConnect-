@@ -14,21 +14,21 @@ class Medecin extends User
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $diplome = null;
 
+    /**
+     * @var Collection<int, Disponibilite>
+     */
     #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: Disponibilite::class, cascade: ['remove'])]
     private Collection $disponibilites;
 
+    /**
+     * @var Collection<int, RendezVous>
+     */
     #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: RendezVous::class, cascade: ['remove'])]
     private Collection $rendezVous;
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->setRoles(['ROLE_MEDECIN']);
-        $this->disponibilites = new ArrayCollection();
-        $this->rendezVous = new ArrayCollection();
-        $this->consultations = new ArrayCollection();
-    }
-
+    /**
+     * @var Collection<int, Consultation>
+     */
     #[ORM\OneToMany(mappedBy: 'medecin', targetEntity: Consultation::class, cascade: ['remove'])]
     private Collection $consultations;
 
@@ -38,6 +38,15 @@ class Medecin extends User
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $estVerifie = false;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->setRoles(['ROLE_MEDECIN']);
+        $this->disponibilites = new ArrayCollection();
+        $this->rendezVous = new ArrayCollection();
+        $this->consultations = new ArrayCollection();
+    }
 
     public function getDiplome(): ?string
     {
@@ -100,6 +109,64 @@ class Medecin extends User
     public function setEstVerifie(bool $estVerifie): static
     {
         $this->estVerifie = $estVerifie;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Disponibilite>
+     */
+    public function getDisponibilites(): Collection
+    {
+        return $this->disponibilites;
+    }
+
+    public function addDisponibilite(Disponibilite $disponibilite): self
+    {
+        if (!$this->disponibilites->contains($disponibilite)) {
+            $this->disponibilites->add($disponibilite);
+            $disponibilite->setMedecin($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDisponibilite(Disponibilite $disponibilite): self
+    {
+        if ($this->disponibilites->removeElement($disponibilite)) {
+            if ($disponibilite->getMedecin() === $this) {
+                $disponibilite->setMedecin(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RendezVous>
+     */
+    public function getRendezVous(): Collection
+    {
+        return $this->rendezVous;
+    }
+
+    public function addRendezVous(RendezVous $rendezVous): self
+    {
+        if (!$this->rendezVous->contains($rendezVous)) {
+            $this->rendezVous->add($rendezVous);
+            $rendezVous->setMedecin($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRendezVous(RendezVous $rendezVous): self
+    {
+        if ($this->rendezVous->removeElement($rendezVous)) {
+            if ($rendezVous->getMedecin() === $this) {
+                $rendezVous->setMedecin(null);
+            }
+        }
 
         return $this;
     }

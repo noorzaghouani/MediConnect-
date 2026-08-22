@@ -1,0 +1,5 @@
+# Snyk navigation policy
+version: v1.1306.4
+exclude:
+  code:
+    - .venv/

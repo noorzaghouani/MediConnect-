@@ -8,6 +8,7 @@
 /public/bundles/
 /var/
 /vendor/
+/.venv
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
@@ -34,3 +35,7 @@
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###

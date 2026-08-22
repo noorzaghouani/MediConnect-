@@ -10,12 +10,18 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: PatientRepository::class)]
 class Patient extends User
 {
+    /**
+     * @var Collection<int, RendezVous>
+     */
     #[ORM\OneToMany(mappedBy: 'patient', targetEntity: RendezVous::class, cascade: ['remove'])]
     private Collection $rendezVous;
 
     #[ORM\OneToOne(mappedBy: 'patient', targetEntity: DossierMedical::class, cascade: ['persist', 'remove'])]
     private ?DossierMedical $dossierMedical = null;
 
+    /**
+     * @var Collection<int, Ordonnance>
+     */
     #[ORM\OneToMany(mappedBy: 'patient', targetEntity: Ordonnance::class, cascade: ['remove'])]
     private Collection $ordonnances;
 

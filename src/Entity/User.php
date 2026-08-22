@@ -31,6 +31,9 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Email(message: "L'email '{{ value }}' n'est pas valide")]
     private ?string $email = null;
 
+    /**
+     * @var list<string>
+     */
     #[ORM\Column]
     private array $roles = [];
 
@@ -119,6 +122,9 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param array<string> $roles
+     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -126,7 +132,7 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
         return $this->password;
     }
