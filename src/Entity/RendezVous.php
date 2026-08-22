@@ -217,37 +217,33 @@ class RendezVous
 
     public function estPasse(): bool
     {
-        return $this->dateHeure !== null && $this->dateHeure < new \DateTime();
+        return $this->dateHeure < new \DateTime();
     }
 
     public function estAVenir(): bool
     {
-        return $this->dateHeure !== null && $this->dateHeure > new \DateTime();
+        return $this->dateHeure > new \DateTime();
     }
 
-    public function getDateFin(): ?\DateTimeInterface
+    public function getDateFin(): \DateTimeInterface
     {
-        if ($this->dateHeure === null) {
-            return null;
-        }
-
         return \DateTimeImmutable::createFromInterface($this->dateHeure)->modify("+{$this->duree} minutes");
     }
 
     // Méthode pour obtenir la date formatée
     public function getDateFormatee(): string
     {
-        return $this->dateHeure ? $this->dateHeure->format('d/m/Y') : '';
+        return $this->dateHeure->format('d/m/Y');
     }
 
     public function getHeureFormatee(): string
     {
-        return $this->dateHeure ? $this->dateHeure->format('H:i') : '';
+        return $this->dateHeure->format('H:i');
     }
 
     public function getDateHeureFormatee(): string
     {
-        return $this->dateHeure ? $this->dateHeure->format('d/m/Y à H:i') : '';
+        return $this->dateHeure->format('d/m/Y à H:i');
     }
 
     public function getConsultation(): ?Consultation
@@ -263,15 +259,14 @@ class RendezVous
     // Méthode pour vérifier si le RDV est aujourd'hui
     public function estAujourdhui(): bool
     {
-        return $this->dateHeure !== null && $this->dateHeure->format('Y-m-d') === (new \DateTime())->format('Y-m-d');
+        return $this->dateHeure->format('Y-m-d') === (new \DateTime())->format('Y-m-d');
     }
 
     public function __toString(): string
     {
-        $dateStr = $this->dateHeure ? $this->dateHeure->format('d/m/Y H:i') : 'Date non définie';
         return sprintf(
             'RDV %s - %s avec Dr. %s',
-            $dateStr,
+            $this->dateHeure->format('d/m/Y H:i'),
             $this->patient?->getNomComplet() ?? 'Patient',
             $this->medecin?->getNomComplet() ?? 'Médecin'
         );

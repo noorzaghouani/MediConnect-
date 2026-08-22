@@ -48,7 +48,7 @@ class Consultation
     #[ORM\Column(type: 'string', length: 20, nullable: true)]
     private ?string $tension = null;
 
-    #[ORM\Column(type: 'float', nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 4, scale: 1, nullable: true)]
     #[Assert\Range(
         min: 30,
         max: 45,
@@ -103,16 +103,6 @@ class Consultation
 
     public function setRendezVous(?RendezVous $rendezVous): self
     {
-        // Unset previous relation if needed
-        if ($rendezVous === null && $this->rendezVous !== null) {
-            $this->rendezVous->setConsultation(null);
-        }
-
-        // Set new relation
-        if ($rendezVous !== null && $rendezVous->getConsultation() !== $this) {
-            $rendezVous->setConsultation($this);
-        }
-
         $this->rendezVous = $rendezVous;
         return $this;
     }

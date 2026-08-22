@@ -12,20 +12,10 @@ class FileUploadService
 
     public function upload(UploadedFile $file, string $uploadDirectory): string
     {
-        // Vérifier l'extension réelle via le type MIME
-        $guessedExtension = $file->guessExtension();
-        $clientExtension = strtolower($file->getClientOriginalExtension());
-        $extension = strtolower($guessedExtension ?: $clientExtension);
-
-        if (!$extension || !in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
+        // Vérifier l'extension
+        $extension = strtolower($file->guessExtension() ?? $file->getClientOriginalExtension());
+        if (!in_array($extension, self::ALLOWED_EXTENSIONS)) {
             throw new \InvalidArgumentException('Format non autorisé. Formats acceptés : PDF, JPG, PNG');
-        }
-
-        // Vérifier également le MIME type pour s'assurer que le contenu correspond
-        $mimeType = $file->getMimeType();
-        $allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/pjpeg'];
-        if ($mimeType && !in_array($mimeType, $allowedMimes, true)) {
-            throw new \InvalidArgumentException('Type de fichier non valide.');
         }
 
         // Vérifier la taille

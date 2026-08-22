@@ -30,7 +30,7 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    private function redirectToDashboard(): Response
+    private function redirectToDashboard()
     {
         $user = $this->getUser();
         

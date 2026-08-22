@@ -208,7 +208,7 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_admin_dashboard');
         }
 
-        /** @var \App\Entity\User|null $user */
+        /** @var \App\Entity\User $user */
         $user = $this->getUser();
 
         if (!$user) {

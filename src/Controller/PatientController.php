@@ -43,7 +43,7 @@ class PatientController extends AbstractController
                 $hasFutureRdv = false;
 
                 foreach ($appointments as $rdv) {
-                    if ($rdv->getMedecin() && $rdv->getMedecin()->getId() === $candidateDoctor->getId()) {
+                    if ($rdv->getMedecin()->getId() === $candidateDoctor->getId()) {
                         // Vérifier s'il y a un RDV annulé
                         if ($rdv->getStatut() === 'annule') {
                             $hasCancelledRdv = true;

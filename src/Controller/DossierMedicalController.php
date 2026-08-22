@@ -107,7 +107,7 @@ class DossierMedicalController extends AbstractController
 
             $consultation = new Consultation();
             $consultation->setDossierMedical($dossier);
-            $consultation->setMedecin($medecin);
+            $consultation->setMedecin($this->getUser());
             $consultation->setRendezVous($rendezVous);
             $consultation->setMotif($request->request->get('motif'));
             $consultation->setSymptomes($request->request->get('symptomes'));

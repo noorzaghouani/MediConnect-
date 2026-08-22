@@ -96,12 +96,7 @@ class MedecinController extends AbstractController
             $medecin->setTelephone($telephone);
         }
 
-        if (!empty($email) && $email !== $medecin->getEmail()) {
-            $existingUser = $entityManager->getRepository(\App\Entity\User::class)->findOneBy(['email' => $email]);
-            if ($existingUser && $existingUser->getId() !== $medecin->getId()) {
-                $this->addFlash('error', 'Cette adresse email est déjà utilisée par un autre compte.');
-                return $this->redirectToRoute('app_medecin_dashboard');
-            }
+        if (!empty($email)) {
             $medecin->setEmail($email);
         }
 
@@ -209,7 +204,7 @@ class MedecinController extends AbstractController
                 $this->addFlash('success', "{$createdCount} créneau(x) créé(s) avec succès");
                 return $this->redirectToRoute('app_medecin_disponibilites');
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Une erreur est survenue lors de la création des créneaux.');
+                $this->addFlash('error', 'Erreur: ' . $e->getMessage());
             }
         }
 

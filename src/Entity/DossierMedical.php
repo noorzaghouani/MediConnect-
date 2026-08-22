@@ -22,9 +22,6 @@ class DossierMedical
     #[ORM\Column]
     private ?\DateTimeImmutable $dateCreation = null;
 
-    /**
-     * @var Collection<int, Consultation>
-     */
     #[ORM\OneToMany(mappedBy: 'dossierMedical', targetEntity: Consultation::class, cascade: ['persist', 'remove'])]
     private Collection $consultations;
 
