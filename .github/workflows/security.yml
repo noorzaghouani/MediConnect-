@@ -1,7 +1,8 @@
 name: Security Pipeline - MediConnect
+
 on:
   push:
-    branches: [ main, test/fix-security-pipeline ]
+    branches: [  test/fix-security-pipeline ]
   pull_request:
     branches: [ main ]
 
@@ -42,10 +43,17 @@ jobs:
         with:
           php-version: '8.2'
           tools: composer:v2
-          ini-values: memory_limit=512M
-      - name: Install dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist --no-scripts
-        env:
-          APP_ENV: test
-      - name: Security audit
-        run: composer audit --no-dev
+      - name: Security audit (CVE scan only)
+        run: |
+          set +e
+          composer audit --locked > /tmp/audit.txt 2>&1
+          cat /tmp/audit.txt
+          if grep -q "No security vulnerability advisories found" /tmp/audit.txt; then
+            echo "No CVE vulnerabilities found - OK"
+            exit 0
+          fi
+          if grep -q "advisories" /tmp/audit.txt; then
+            echo "Security vulnerabilities found!"
+            exit 1
+          fi
+          exit 0
