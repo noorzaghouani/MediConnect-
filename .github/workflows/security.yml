@@ -2,7 +2,7 @@ name: Security Pipeline - MediConnect
 
 on:
   push:
-    branches: [ test/fix-security-pipeline ]
+    branches: [ main, test/fix-security-pipeline ]
   pull_request:
     branches: [ main ]
 
@@ -44,13 +44,4 @@ jobs:
           php-version: '8.2'
           tools: composer:v2
       - name: Security audit (CVE scan only)
-        run: |
-          composer audit --locked --no-dev --format=json > audit.json
-          cat audit.json
-          ADVISORY_COUNT=$(jq '.advisories | length' audit.json)
-          if [ "$ADVISORY_COUNT" -gt 0 ]; then
-            echo "FAIL: $ADVISORY_COUNT security advisory/advisories found"
-            exit 1
-          fi
-          echo "OK: no security advisories found"
-          exit 0
+        run: composer audit --locked --no-dev --abandoned=report
