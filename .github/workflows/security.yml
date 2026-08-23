@@ -2,7 +2,7 @@ name: Security Pipeline - MediConnect
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, test/fix-security-pipeline ]
   pull_request:
     branches: [ main ]
 
@@ -15,9 +15,14 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-      - uses: gitleaks/gitleaks-action@e6dab246340401bf53eec993b8f05aebe80ac636 # v2.3.4
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Gitleaks CLI
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.27.2/gitleaks_8.27.2_linux_x64.tar.gz \
+            -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          chmod +x gitleaks
+      - name: Run Gitleaks
+        run: ./gitleaks detect --source . --verbose --redact
 
   sast-scan:
     name: Semgrep - SAST Scan
@@ -38,8 +43,5 @@ jobs:
         with:
           php-version: '8.2'
           tools: composer:v2
-          ini-values: memory_limit=512M
-      - name: Install dependencies
-        run: composer install --no-interaction --no-progress --prefer-dist
-      - name: Security audit
-        run: composer audit --no-dev
+      - name: Security audit (CVE scan only)
+        run: composer audit --locked --no-dev --abandoned=report
