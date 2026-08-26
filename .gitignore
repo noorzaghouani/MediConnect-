@@ -9,6 +9,7 @@
 /var/
 /vendor/
 /.venv
+/var/uploads/diplomes/
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###

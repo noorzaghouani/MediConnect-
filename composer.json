@@ -1,8 +1,8 @@
 {
-    "name": "symfony/website-skeleton",
+    "name": "noorzaghouani/mediconnect",
     "type": "project",
     "license": "MIT",
-    "description": "A skeleton to start a new Symfony website",
+    "description": "Application web de gestion de rendez-vous médicaux",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {

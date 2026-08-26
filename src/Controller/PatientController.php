@@ -201,7 +201,7 @@ class PatientController extends AbstractController
     }
 
     #[Route('/patient/edit-profile', name: 'app_patient_edit_profile', methods: ['POST'])]
-    public function editProfile(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher): Response
+    public function editProfile(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher, \Symfony\Component\Validator\Validator\ValidatorInterface $validator): Response
     {
         /** @var \App\Entity\Patient $patient */
         $patient = $this->getUser();
@@ -224,10 +224,21 @@ class PatientController extends AbstractController
             $patient->setTelephone($data['telephone']);
         }
 
+        // Revalider l'entité avec les mêmes règles que l'inscription
+        $errors = $validator->validate($patient);
+        if (count($errors) > 0) {
+            $this->addFlash('error', $errors[0]->getMessage());
+            return $this->redirectToRoute('app_patient_dashboard');
+        }
+
         // Update password if provided
         if (!empty($data['current_password']) && !empty($data['new_password'])) {
             // Verify current password
             if ($passwordHasher->isPasswordValid($patient, $data['current_password'])) {
+                if (strlen($data['new_password']) < 10) {
+                    $this->addFlash('error', 'Le nouveau mot de passe doit contenir au moins 10 caractères.');
+                    return $this->redirectToRoute('app_patient_dashboard');
+                }
                 if ($data['new_password'] === $data['confirm_password']) {
                     $hashedPassword = $passwordHasher->hashPassword($patient, $data['new_password']);
                     $patient->setPassword($hashedPassword);
@@ -256,14 +267,19 @@ class PatientController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Token de sécurité invalide.'], 403);
         }
 
-        // Récupérer la disponibilité
         $disponibilite = $em->getRepository(\App\Entity\Disponibilite::class)->find($id);
 
         if (!$disponibilite) {
             return new JsonResponse(['success' => false, 'message' => 'Disponibilité introuvable.'], 404);
         }
 
-        if (!$disponibilite->isEstDisponible()) {
+        // Mise à jour atomique : ne réussit que si le créneau était encore disponible.
+        // Si deux requêtes arrivent simultanément, une seule aura $affected === 1.
+        $affected = $em->createQuery(
+            'UPDATE App\Entity\Disponibilite d SET d.estDisponible = false WHERE d.id = :id AND d.estDisponible = true'
+        )->setParameter('id', $id)->execute();
+
+        if ($affected === 0) {
             return new JsonResponse(['success' => false, 'message' => 'Ce créneau n\'est plus disponible.'], 400);
         }
 
@@ -273,11 +289,8 @@ class PatientController extends AbstractController
         $rdv->setMedecin($disponibilite->getMedecin());
         $rdv->setDateHeure($disponibilite->getDateDebut());
         $rdv->setStatut('en_attente');
-        $rdv->setMotif('Consultation standard'); // Motif par défaut ou à demander via un modal
+        $rdv->setMotif('Consultation standard');
         $rdv->setCreatedAt(new \DateTimeImmutable());
-
-        // Marquer la disponibilité comme prise
-        $disponibilite->setEstDisponible(false);
 
         $em->persist($rdv);
         $em->flush();

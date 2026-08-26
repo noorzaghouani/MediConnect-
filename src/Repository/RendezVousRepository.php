@@ -154,10 +154,11 @@ class RendezVousRepository extends ServiceEntityRepository
         $conflictingRendezVous = $this->createQueryBuilder('r')
             ->andWhere('r.medecin = :medecin')
             ->andWhere('r.statut != :annule')
-            ->andWhere('(r.dateHeure < :endDateTime AND DATE_ADD(r.dateHeure, 30, \'MINUTE\') > :dateTime)')
+            ->andWhere('(r.dateHeure < :endDateTime AND DATE_ADD(r.dateHeure, :duration, \'MINUTE\') > :dateTime)')
             ->setParameter('medecin', $medecin)
             ->setParameter('dateTime', $dateTime)
             ->setParameter('endDateTime', $endDateTime)
+            ->setParameter('duration', $durationMinutes)
             ->setParameter('annule', RendezVous::STATUT_ANNULE)
             ->getQuery()
             ->getResult();
@@ -220,7 +221,7 @@ class RendezVousRepository extends ServiceEntityRepository
     }
 
     // Ajoutez cette méthode pour sauvegarder un rendez-vous
-    public function save(RendezVous $entity, bool $flush = false): void
+    public function save(RendezVous $entity, bool $flush = true): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -229,8 +230,7 @@ class RendezVousRepository extends ServiceEntityRepository
         }
     }
 
-    // Ajoutez cette méthode pour supprimer un rendez-vous
-    public function remove(RendezVous $entity, bool $flush = false): void
+    public function remove(RendezVous $entity, bool $flush = true): void
     {
         $this->getEntityManager()->remove($entity);
 

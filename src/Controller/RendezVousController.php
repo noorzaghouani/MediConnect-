@@ -33,8 +33,12 @@ class RendezVousController extends AbstractController
             return $this->redirectToRoute('app_patient_dashboard');
         }
 
-        // 1. Vérifier si le créneau est toujours disponible
-        if (!$disponibilite->isEstDisponible()) {
+        // 1. Vérifier si le créneau est toujours disponible (UPDATE atomique)
+        $affected = $entityManager->createQuery(
+            'UPDATE App\Entity\Disponibilite d SET d.estDisponible = false WHERE d.id = :id AND d.estDisponible = true'
+        )->setParameter('id', $id)->execute();
+
+        if ($affected === 0) {
             $this->addFlash('error', 'Ce créneau n\'est plus disponible.');
             return $this->redirectToRoute('app_patient_dashboard');
         }
@@ -50,10 +54,7 @@ class RendezVousController extends AbstractController
         $diff = $disponibilite->getDateFin()->getTimestamp() - $disponibilite->getDateDebut()->getTimestamp();
         $rdv->setDuree((int) ($diff / 60));
 
-        // 3. Marquer le créneau comme indisponible
-        $disponibilite->setEstDisponible(false);
-
-        // 4. Sauvegarder
+        // 3. Sauvegarder
         $entityManager->persist($rdv);
         $entityManager->flush();
 

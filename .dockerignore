@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env.local
+.env.*.local
+node_modules/
+vendor/
+var/cache/*
+var/log/*
+public/build/
+public/uploads/*
+tests/
+.idea/
+.vscode/

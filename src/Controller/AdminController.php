@@ -9,6 +9,7 @@ use App\Entity\Speciality;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -200,6 +201,22 @@ class AdminController extends AbstractController
         return $this->redirectToRoute('app_admin_medecins');
     }
 
+    #[Route('/medecin/{id}/diplome', name: 'app_admin_medecin_diplome', requirements: ['id' => '\d+'])]
+    public function voirDiplome(int $id, EntityManagerInterface $em): Response
+    {
+        $medecin = $em->getRepository(Medecin::class)->find($id);
+        if (!$medecin || !$medecin->getDiplome()) {
+            throw $this->createNotFoundException();
+        }
+
+        $path = $this->getParameter('diplomes_directory') . '/' . $medecin->getDiplome();
+        if (!is_file($path)) {
+            throw $this->createNotFoundException();
+        }
+
+        return $this->file($path);
+    }
+
     #[Route('/profile/update', name: 'app_admin_update_profile', methods: ['POST'])]
     public function updateProfile(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): Response
     {
@@ -215,18 +232,31 @@ class AdminController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        $nom         = $request->request->get('nom');
-        $prenom      = $request->request->get('prenom');
-        $telephone   = $request->request->get('telephone');
-        $newPassword = $request->request->get('new_password');
+        $nom             = $request->request->get('nom');
+        $prenom          = $request->request->get('prenom');
+        $telephone       = $request->request->get('telephone');
+        $currentPassword = $request->request->get('current_password');
+        $newPassword     = $request->request->get('new_password');
+        $confirmPassword = $request->request->get('confirm_password');
 
         if ($nom)       $user->setNom($nom);
         if ($prenom)    $user->setPrenom($prenom);
         if ($telephone) $user->setTelephone($telephone);
 
         if (!empty($newPassword)) {
-            $hashedPassword = $passwordHasher->hashPassword($user, $newPassword);
-            $user->setPassword($hashedPassword);
+            if (empty($currentPassword) || !$passwordHasher->isPasswordValid($user, $currentPassword)) {
+                $this->addFlash('error', 'Mot de passe actuel incorrect.');
+                return $this->redirectToRoute('app_admin_dashboard');
+            }
+            if (strlen($newPassword) < 10) {
+                $this->addFlash('error', 'Le nouveau mot de passe doit contenir au moins 10 caractères.');
+                return $this->redirectToRoute('app_admin_dashboard');
+            }
+            if ($newPassword !== $confirmPassword) {
+                $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
+                return $this->redirectToRoute('app_admin_dashboard');
+            }
+            $user->setPassword($passwordHasher->hashPassword($user, $newPassword));
         }
 
         $em->flush();

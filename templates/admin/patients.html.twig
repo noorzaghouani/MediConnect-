@@ -76,7 +76,7 @@
                                 <td class="font-weight-bold">{{ patient.prenom }} {{ patient.nom }}</td>
                                 <td>{{ patient.createdAt ? patient.createdAt|date('d/m/Y') : 'N/A' }}</td>
                                 <td class="table-cell-actions">
-                                    <button class="btn btn-view" onclick="openPatientModal('{{ patient.prenom }} {{ patient.nom }}', '{{ patient.email }}', '{{ patient.telephone }}')">
+                                    <button class="btn btn-view" onclick="openPatientModal('{{ (patient.prenom ~ ' ' ~ patient.nom)|e('js') }}', '{{ patient.email|e('js') }}', '{{ patient.telephone|e('js') }}')">
                                         <i class="fas fa-eye"></i> Voir
                                     </button>
                                     <button class="btn btn-delete"

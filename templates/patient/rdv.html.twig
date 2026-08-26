@@ -118,7 +118,7 @@
 
                                 <div class="rdv-action">
                                     <button class="btn btn-reserve" 
-                                            onclick="reserverCreneau({{ dispo.id }}, '{{ dispo.medecin.prenom }} {{ dispo.medecin.nom }}', '{{ dispo.dateDebut|date('d/m/Y à H:i') }}')">
+                                            onclick="reserverCreneau({{ dispo.id }}, '{{ (dispo.medecin.prenom ~ ' ' ~ dispo.medecin.nom)|e('js') }}', '{{ dispo.dateDebut|date('d/m/Y à H:i')|e('js') }}')">
                                         <i class="fas fa-calendar-check"></i> Réserver
                                     </button>
                                 </div>

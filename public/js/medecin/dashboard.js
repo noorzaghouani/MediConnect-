@@ -31,9 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>
             <div class="toast-content">
                 <div class="toast-title">${title}</div>
-                <div class="toast-message">${message}</div>
-            </div>
-        `;
+                <div class="toast-message"></div>
+            </div>`;
+        toast.querySelector('.toast-message').textContent = message;
 
         container.appendChild(toast);
 

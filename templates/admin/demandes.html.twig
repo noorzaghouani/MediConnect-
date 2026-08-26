@@ -96,7 +96,7 @@
                                     </td>
                                     <td>
                                         {% if medecin.diplome %}
-                                            <a href="{{ asset('uploads/diplomes/' ~ medecin.diplome) }}" target="_blank" class="btn btn-view" title="Voir Diplôme">
+                                            <a href="{{ path('app_admin_medecin_diplome', {id: medecin.id}) }}" target="_blank" class="btn btn-view" title="Voir Diplôme">
                                                 <i class="fas fa-eye"></i> Voir
                                             </a>
                                         {% else %}

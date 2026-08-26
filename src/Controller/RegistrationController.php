@@ -39,27 +39,30 @@ class RegistrationController extends AbstractController
             }
 
             if ($data['role'] === 'medecin') {
+                $diplomeFile = $form->get('diplome')->getData();
+                $specialite  = $form->get('specialite')->getData();
+
+                // L1 fix : vérification côté serveur — diplôme et spécialité obligatoires
+                if (!$diplomeFile || !$specialite) {
+                    $this->addFlash('error', 'Le diplôme et la spécialité sont obligatoires pour un compte médecin.');
+                    return $this->redirectToRoute('app_register');
+                }
+
                 $user = new Medecin();
 
                 // Upload sécurisé du diplôme
-                $diplomeFile = $form->get('diplome')->getData();
-                if ($diplomeFile) {
-                    try {
-                        $fileName = $fileUploadService->upload(
-                            $diplomeFile,
-                            $this->getParameter('diplomes_directory')
-                        );
-                        $user->setDiplome($fileName);
-                    } catch (\Exception $e) {
-                        $this->addFlash('error', $e->getMessage());
-                        return $this->redirectToRoute('app_register');
-                    }
+                try {
+                    $fileName = $fileUploadService->upload(
+                        $diplomeFile,
+                        $this->getParameter('diplomes_directory')
+                    );
+                    $user->setDiplome($fileName);
+                } catch (\Exception $e) {
+                    $this->addFlash('error', $e->getMessage());
+                    return $this->redirectToRoute('app_register');
                 }
 
-                $specialite = $form->get('specialite')->getData();
-                if ($specialite) {
-                    $user->setSpecialite($specialite);
-                }
+                $user->setSpecialite($specialite);
             } else {
                 $user = new Patient();
             }

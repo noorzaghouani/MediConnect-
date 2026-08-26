@@ -3,8 +3,8 @@ Mediconnect is a medical management web application allow patients to book appoi
 
 ## 🛠️ Technologies Used
 
-- **Backend**: PHP 8.1+ with Symfony 6.1
-- **Database**: MySQL 8.0
+- **Backend**: PHP 8.1+ with Symfony 6.4
+- **Database**: MariaDB 10.4+ (ou MySQL 8.0)
 - **ORM**: Doctrine 3.5
 - **Templating**: Twig 3.0
 - **Frontend**: HTML5, CSS3 (CSS variables), Vanilla JavaScript
@@ -19,7 +19,7 @@ Before starting, make sure you have installed:
   - `ext-iconv`
   - `pdo_mysql`
 - Composer (PHP dependency manager)
-- MySQL >= 8.0
+- MariaDB >= 10.4 (ou MySQL >= 8.0)
 
 ## 📁 Project Structure
 ````

@@ -21,13 +21,13 @@ final class Version20260107000000 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // Index pour table rendez_vous
-        $this->addSql('CREATE INDEX idx_medecin_date ON rendez_vous (medecin_id, dateHeure)');
-        $this->addSql('CREATE INDEX idx_patient_date ON rendez_vous (patient_id, dateHeure)');
-        $this->addSql('CREATE INDEX idx_date_statut ON rendez_vous (dateHeure, statut)');
+        $this->addSql('CREATE INDEX idx_medecin_date ON rendez_vous (medecin_id, date_heure)');
+        $this->addSql('CREATE INDEX idx_patient_date ON rendez_vous (patient_id, date_heure)');
+        $this->addSql('CREATE INDEX idx_date_statut ON rendez_vous (date_heure, statut)');
 
         // Index pour table disponibilite
-        $this->addSql('CREATE INDEX idx_medecin_date_dispo ON disponibilite (medecin_id, dateDebut)');
-        $this->addSql('CREATE INDEX idx_disponible ON disponibilite (estDisponible, dateDebut)');
+        $this->addSql('CREATE INDEX idx_medecin_date_dispo ON disponibilite (medecin_id, date_debut)');
+        $this->addSql('CREATE INDEX idx_disponible ON disponibilite (est_disponible, date_debut)');
 
         // Index pour table users
         $this->addSql('CREATE INDEX idx_type ON users (type)');

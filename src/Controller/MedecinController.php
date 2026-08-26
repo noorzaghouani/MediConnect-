@@ -61,7 +61,8 @@ class MedecinController extends AbstractController
     public function editProfile(
         Request $request,
         EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        \Symfony\Component\Validator\Validator\ValidatorInterface $validator
     ): Response {
         /** @var Medecin $medecin */
         $medecin = $this->getUser();
@@ -112,9 +113,20 @@ class MedecinController extends AbstractController
             }
         }
 
+        // Revalider l'entité avec les mêmes règles que l'inscription
+        $errors = $validator->validate($medecin);
+        if (count($errors) > 0) {
+            $this->addFlash('error', $errors[0]->getMessage());
+            return $this->redirectToRoute('app_medecin_dashboard');
+        }
+
         // Handle password change
         if (!empty($currentPassword) && !empty($newPassword)) {
             if ($passwordHasher->isPasswordValid($medecin, $currentPassword)) {
+                if (strlen($newPassword) < 10) {
+                    $this->addFlash('error', 'Le nouveau mot de passe doit contenir au moins 10 caractères.');
+                    return $this->redirectToRoute('app_medecin_dashboard');
+                }
                 if ($newPassword === $confirmPassword) {
                     $hashedPassword = $passwordHasher->hashPassword($medecin, $newPassword);
                     $medecin->setPassword($hashedPassword);

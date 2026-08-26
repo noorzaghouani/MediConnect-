@@ -63,8 +63,8 @@ abstract class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: "Le téléphone est obligatoire")]
     #[Assert\Regex(
-        pattern: "/^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$/",
-        message: "Le numéro de téléphone n'est pas valide (format français attendu)"
+        pattern: "/^\+?[0-9\s.\-]{8,20}$/",
+        message: "Le numéro de téléphone n'est pas valide"
     )]
     private ?string $telephone = null;
 
