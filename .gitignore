@@ -10,6 +10,8 @@
 /vendor/
 /.venv
 /var/uploads/diplomes/
+.scannerwork
+sonar-project.properties 
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
