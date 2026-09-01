@@ -13,7 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Validator\Constraints\EqualTo;
+//use Symfony\Component\Validator\Constraints\EqualTo;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -118,10 +118,10 @@ class RegistrationFormType extends AbstractType
                     new NotBlank([
                         'message' => 'Veuillez confirmer votre mot de passe',
                     ]),
-                    new EqualTo([
-                        'propertyPath' => 'password',
-                        'message' => 'Les mots de passe ne correspondent pas',
-                    ]),
+               //     new EqualTo([
+                 //       'propertyPath' => 'parent.all[password].data',
+                   //     'message' => 'Les mots de passe ne correspondent pas',
+                    //]),
                 ],
             ])
         ;

@@ -11,3 +11,9 @@ public/uploads/*
 tests/
 .idea/
 .vscode/
+.scannerwork
+.snyk
+.venv
+sonar-project.properties
+diagrammes/
+images/

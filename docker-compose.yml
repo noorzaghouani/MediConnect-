@@ -1,0 +1,32 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:80"
+    volumes:
+      - ./var/uploads:/var/www/html/var/uploads
+    env_file:
+      - .env.local
+    environment:
+      - APP_ENV=prod
+      - DATABASE_URL=mysql://root:${MYSQL_ROOT_PASSWORD}@database:3306/mediconnect?serverVersion=10.4.32-MariaDB&charset=utf8mb4
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    image: mariadb:10.4
+    env_file:
+      - .env.local
+    environment:
+      - MYSQL_DATABASE=mediconnect
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db_data:
