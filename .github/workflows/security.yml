@@ -41,9 +41,9 @@ jobs:
           php-version: '8.2'
           tools: composer:v2, phpstan 
       - name: Install dependencies
-        run: composer install --no-progress --prefer-dist --no-interaction
+        run: composer install --no-progress --prefer-dist --no-interaction --no-scripts
       - name: Run PHPStan
-        run: vendor/bin/phpstan  analyse --no-progress 
+        run: vendor/bin/phpstan analyse --no-progress 
   sca-scan:
     name: Composer Audit - SCA Scan
     runs-on: ubuntu-latest
@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
       - name: Analyse Snyk
-        uses: snyk/actions/php@0.4.0 
+        uses: snyk/actions/php@12140f4059e244892ae643824a95459a102120dd 
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:

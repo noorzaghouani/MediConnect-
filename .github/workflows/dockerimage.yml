@@ -11,13 +11,13 @@ jobs:
     name: Image Docker (build + scan Trivy)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
  
       - name: Build de l'image
         run: docker build -t mediconnect:${{ github.sha }} .
  
       - name: Scan Trivy
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 
         with:
           image-ref: mediconnect:${{ github.sha }}
           format: table
