@@ -9,7 +9,7 @@ jobs:
     name: Gitleaks - Secrets Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
         with:
           fetch-depth: 0
       - name: Install Gitleaks CLI
@@ -20,23 +20,50 @@ jobs:
           chmod +x gitleaks
       - name: Run Gitleaks
         run: ./gitleaks detect --source . --verbose --redact
+
   sast-scan:
     name: Semgrep - SAST Scan
     runs-on: ubuntu-latest
     container:
       image: semgrep/semgrep
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
       - name: Semgrep SAST Scan
         run: semgrep scan --config "p/php" --config "p/owasp-top-ten" --error
+  
+  phpstan-scan:
+    name: PHPStan - Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 
+        with:
+          php-version: '8.2'
+          tools: composer:v2, phpstan 
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction
+      - name: Run PHPStan
+        run: vendor/bin/phpstan  analyse --no-progress 
   sca-scan:
     name: Composer Audit - SCA Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 
         with:
           php-version: '8.2'
           tools: composer:v2
       - name: Security audit (CVE scan only)
         run: composer audit --locked --no-dev --abandoned=report
+  
+  snyk:
+    name: Dépendances (Snyk)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
+      - name: Analyse Snyk
+        uses: snyk/actions/php@0.4.0 
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
