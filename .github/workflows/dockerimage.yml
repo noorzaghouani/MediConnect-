@@ -1,1 +1,28 @@
-
+name: Image Docker - MediConnect
+ 
+on:
+  push:
+    branches: [ main, test/fix-security-pipeline, test/devsecops-final ]
+  pull_request:
+    branches: [ main ]
+ 
+jobs:
+  docker-image:
+    name: Image Docker (build + scan Trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
+ 
+      - name: Build de l'image
+        run: docker build -t mediconnect:${{ github.sha }} .
+ 
+      - name: Scan Trivy
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy:latest image \
+            --format table \
+            --vuln-type os,library \
+            --severity HIGH,CRITICAL \
+            --exit-code 1 \
+            --ignore-unfixed \
+            mediconnect:${{ github.sha }}
