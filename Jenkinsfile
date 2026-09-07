@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Installer les dépendances') {
             steps {
-                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" composer:2 composer install --no-progress --prefer-dist --no-interaction'
+                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" composer:2 composer install --no-progress --prefer-dist --no-interaction --no-scripts'
             }
         }
 
