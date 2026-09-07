@@ -6,34 +6,28 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'test/devsecops-final', url: 'https://github.com/noorzaghouani/MediConnect-.git'
-            }
-        }
-
         stage('Installer les dépendances') {
             steps {
-                sh 'docker run --rm -v "$WORKSPACE:/app" -w /app composer:2 composer install --no-progress --prefer-dist --no-interaction'
+                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" composer:2 composer install --no-progress --prefer-dist --no-interaction'
             }
         }
 
         stage('Secrets - Gitleaks') {
             steps {
-                sh 'docker run --rm -v "$WORKSPACE:/repo" zricethezav/gitleaks:latest detect --source /repo --verbose --redact'
+                sh 'docker run --rm --volumes-from jenkins zricethezav/gitleaks:latest detect --source "$WORKSPACE" --verbose --redact'
             }
         }
 
         stage('SAST - Semgrep') {
             steps {
-                sh 'docker run --rm -v "$WORKSPACE:/src" semgrep/semgrep semgrep scan --config "p/php" --config "p/owasp-top-ten" --error /src'
+                sh 'docker run --rm --volumes-from jenkins semgrep/semgrep semgrep scan --config "p/php" --config "p/owasp-top-ten" --error "$WORKSPACE"'
             }
         }
 
         stage('SAST - PHPStan') {
             steps {
                 sh '''
-                    docker run --rm -v "$WORKSPACE:/app" -w /app \
+                    docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
                       -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
                       -e DATABASE_URL="mysql://root:root@127.0.0.1:3306/mediconnect?serverVersion=10.4.32-MariaDB&charset=utf8mb4" \
                       composer:2 vendor/bin/phpstan analyse --no-progress
@@ -43,14 +37,14 @@ pipeline {
 
         stage('SCA - composer audit') {
             steps {
-                sh 'docker run --rm -v "$WORKSPACE:/app" -w /app composer:2 composer audit --locked --no-dev --abandoned=report'
+                sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" composer:2 composer audit --locked --no-dev --abandoned=report'
             }
         }
 
         stage('Tests - PHPUnit') {
             steps {
                 sh '''
-                    docker run --rm -v "$WORKSPACE:/app" -w /app \
+                    docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
                       -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
                       composer:2 vendor/bin/phpunit --testdox
                 '''
