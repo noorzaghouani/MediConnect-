@@ -45,6 +45,7 @@ pipeline {
         stage('Tests - PHPUnit') {
             steps {
                 sh '''
+                    cp -n .env.test .env || cp -n .env.example .env || touch .env
                     docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
                       -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
                       -e SYMFONY_DEPRECATIONS_HELPER=999999 \
