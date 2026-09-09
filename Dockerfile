@@ -3,7 +3,7 @@ WORKDIR /app
 COPY composer.json composer.lock symfony.lock ./
 RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --optimize-autoloader
 
-FROM php:8.2-apache AS app
+FROM php:8.5-apache AS app
 
 RUN apt-get update && apt-get upgrade -y openssl libssl3t64 \
     && apt-get install -y --no-install-recommends \
