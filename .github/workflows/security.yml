@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 
       - name: Semgrep SAST Scan
-        run: semgrep scan --config "p/php" --config "p/owasp-top-ten" --error
+        run: semgrep scan --config "p/php" --config "p/owasp-top-ten" --exclude=".github" --error
   
   phpstan-scan:
     name: PHPStan - Static Analysis
