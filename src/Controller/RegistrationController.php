@@ -26,15 +26,13 @@ class RegistrationController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-            if ($data['password'] !== $data['confirm_password']) {
-              $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
-              return $this->redirectToRoute('app_register');
+            $confirmPassword = $form->get('confirm_password')->getData();
+            if ($data['password'] !== $confirmPassword) {
+                $this->addFlash('error', 'Les mots de passe ne correspondent pas.');
+                return $this->redirectToRoute('app_register');
             }
             // Vérifier si l'email existe déjà
-            $existingUser = $entityManager->getRepository(Patient::class)->findOneBy(['email' => $data['email']]);
-            if (!$existingUser) {
-                $existingUser = $entityManager->getRepository(Medecin::class)->findOneBy(['email' => $data['email']]);
-            }
+            $existingUser = $entityManager->getRepository(\App\Entity\User::class)->findOneBy(['email' => $data['email']]);
 
             if ($existingUser) {
                 $this->addFlash('error', 'Un compte avec cet email existe déjà.');

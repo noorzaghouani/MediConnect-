@@ -28,16 +28,26 @@ class InitAdminCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
+        $email         = $_ENV['ADMIN_EMAIL']    ?? $_SERVER['ADMIN_EMAIL']    ?? 'admin@mediconnect.com';
+        $plainPassword = $_ENV['ADMIN_PASSWORD'] ?? $_SERVER['ADMIN_PASSWORD'] ?? 'Admin123456!';
+
         $existingAdmin = $this->entityManager->getRepository(Administrateur::class)->findOneBy([]);
 
         if ($existingAdmin) {
-            $io->info('Un administrateur existe déjà dans la base de données.');
+            // L'admin existe déjà : resynchroniser son mot de passe avec ADMIN_PASSWORD
+            $hashedPassword = $this->passwordHasher->hashPassword($existingAdmin, $plainPassword);
+            $existingAdmin->setPassword($hashedPassword);
+            $this->entityManager->flush();
+
+            $io->success(sprintf(
+                'Mot de passe admin resynchronisé depuis ADMIN_PASSWORD pour : %s',
+                $existingAdmin->getEmail()
+            ));
+
             return Command::SUCCESS;
         }
 
-        $email = $_ENV['ADMIN_EMAIL'] ?? $_SERVER['ADMIN_EMAIL'] ?? 'admin@mediconnect.com';
-        $plainPassword = $_ENV['ADMIN_PASSWORD'] ?? $_SERVER['ADMIN_PASSWORD'] ?? 'Admin123456!';
-
+        // Aucun admin : on le crée
         $admin = new Administrateur();
         $admin->setEmail($email);
         $admin->setNom('Admin');
