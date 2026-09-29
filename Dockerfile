@@ -5,13 +5,13 @@ RUN composer install --no-dev --no-scripts --no-interaction --prefer-dist --opti
 
 FROM php:8.2-apache AS app
 
-RUN apt-get update && apt-get upgrade -y openssl libssl3t64 \
+RUN apt-get update && apt-get upgrade -y openssl libssl3t64 linux-libc-dev \
     && apt-get install -y --no-install-recommends \
     libicu-dev \
     libzip-dev \
     && docker-php-ext-install pdo pdo_mysql intl zip opcache \
     && apt-mark manual libicu[0-9]* libzip[0-9]* 2>/dev/null || true \
-    && apt-get purge -y --auto-remove libicu-dev libzip-dev \
+    && apt-get purge -y --auto-remove libicu-dev libzip-dev linux-libc-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN a2enmod rewrite
