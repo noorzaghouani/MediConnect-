@@ -29,7 +29,6 @@ pipeline {
                 sh '''
                     docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
                       -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
-                      -e SYMFONY_DEPRECATIONS_HELPER=999999 \
                       -e DATABASE_URL="mysql://root:root@127.0.0.1:3306/mediconnect?serverVersion=10.4.32-MariaDB&charset=utf8mb4" \
                       composer:2 vendor/bin/phpstan analyse --no-progress
                 '''
@@ -39,6 +38,22 @@ pipeline {
         stage('SCA - composer audit') {
             steps {
                 sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" composer:2 composer audit --locked --no-dev --abandoned=report'
+            }
+        }
+
+        stage('SCA - Snyk') {
+            steps {
+                withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
+                    sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" -e SNYK_TOKEN=$SNYK_TOKEN snyk/snyk:linux snyk test --file=composer.lock --severity-threshold=high'
+                }
+            }
+        }
+
+        stage('Qualité - SonarCloud') {
+            steps {
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                    sh 'docker run --rm --volumes-from jenkins -w "$WORKSPACE" -e SONAR_HOST_URL=https://sonarcloud.io -e SONAR_TOKEN=$SONAR_TOKEN sonarsource/sonar-scanner-cli'
+                }
             }
         }
 
@@ -57,7 +72,7 @@ pipeline {
         stage('Image Docker + Trivy') {
             steps {
                 sh 'docker build -t ${IMAGE_TAG} .'
-                sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 0 --ignore-unfixed ${IMAGE_TAG}'
+                sh 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity HIGH,CRITICAL --exit-code 1 --ignore-unfixed ${IMAGE_TAG}'
             }
         }
     }

@@ -21,7 +21,7 @@ class RegisterForm {
         });
 
         // Validation pour le select spécialité
-        const specialiteSelect = document.getElementById('specialite');
+        const specialiteSelect = document.getElementById('registration_form_specialite') || document.getElementById('specialite');
         if (specialiteSelect) {
             specialiteSelect.addEventListener('blur', () => this.validateField(specialiteSelect));
             specialiteSelect.addEventListener('change', () => this.clearError(specialiteSelect));
@@ -148,8 +148,8 @@ class RegisterForm {
             this.showError(input, 'Le mot de passe est obligatoire');
             return false;
         }
-        if (value.length < 8) {
-            this.showError(input, 'Le mot de passe doit contenir au moins 8 caractères');
+        if (value.length < 10) {
+            this.showError(input, 'Le mot de passe doit contenir au moins 10 caractères');
             return false;
         }
         if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
@@ -231,8 +231,7 @@ class RegisterForm {
                 isValid = false;
             }
             
-            // Note: Le champ spécialité n'est pas encore dans le FormType Symfony
-            const specialiteInput = document.getElementById('specialite');
+            const specialiteInput = document.getElementById('registration_form_specialite') || document.getElementById('specialite');
             if (specialiteInput && !specialiteInput.value) {
                 this.showError(specialiteInput, 'La spécialité est obligatoire pour les médecins');
                 isValid = false;
@@ -297,9 +296,8 @@ function toggleDiplomeField() {
     const diplomeSection = document.getElementById('diplome-section');
     const diplomeInput = document.getElementById('registration_form_diplome');
     
-    // Le champ spécialité n'est pas encore géré par Symfony dans ce snippet, on le garde conditionnel
     const specialiteSection = document.getElementById('specialite-section');
-    const specialiteInput = document.getElementById('specialite');
+    const specialiteInput = document.getElementById('registration_form_specialite') || document.getElementById('specialite');
     
     if (medecinRadio && medecinRadio.checked) {
         if(diplomeSection) diplomeSection.style.display = 'block';

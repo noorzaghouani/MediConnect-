@@ -10,6 +10,7 @@ RUN apt-get update && apt-get upgrade -y openssl libssl3t64 \
     libicu-dev \
     libzip-dev \
     && docker-php-ext-install pdo pdo_mysql intl zip opcache \
+    && apt-mark manual libicu[0-9]* libzip[0-9]* 2>/dev/null || true \
     && apt-get purge -y --auto-remove libicu-dev libzip-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -31,5 +32,7 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 EXPOSE 80
 
 USER www-data
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"] # nosemgrep: dockerfile.security.missing-user-entrypoint
-CMD ["apache2-foreground"] # nosemgrep: dockerfile.security.missing-user
+# nosemgrep: dockerfile.security.missing-user-entrypoint
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+# nosemgrep: dockerfile.security.missing-user
+CMD ["apache2-foreground"]

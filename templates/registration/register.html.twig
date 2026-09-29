@@ -45,7 +45,7 @@
             <div class="form-group full-width" id="diplome-section" style="display: none;">
                 {{ form_label(registrationForm.diplome) }}
                 <div class="file-upload-wrapper">
-                    {{ form_widget(registrationForm.diplome, {'attr': {'onchange': 'updateFileName(this)', 'id': 'diplome'}}) }}
+                    {{ form_widget(registrationForm.diplome, {'attr': {'onchange': 'updateFileName(this)', 'id': 'registration_form_diplome'}}) }}
                     <label for="registration_form_diplome" class="file-upload-label">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -63,7 +63,7 @@
             <!-- Champ spécialité (visible seulement pour médecin) -->
             <div class="form-group full-width" id="specialite-section" style="display: none;">
                 {{ form_label(registrationForm.specialite) }}
-                {{ form_widget(registrationForm.specialite) }}
+                {{ form_widget(registrationForm.specialite, {'attr': {'id': 'registration_form_specialite'}}) }}
                 {{ form_errors(registrationForm.specialite) }}
             </div>
 
