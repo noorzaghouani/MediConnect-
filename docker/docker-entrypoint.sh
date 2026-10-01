@@ -8,7 +8,6 @@ done
 echo "MariaDB est pret !"
 
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration || true
-php bin/console doctrine:schema:update --force --no-interaction || true
 php bin/console app:load-specialities --no-interaction || true
 php bin/console app:init-admin --no-interaction || true
 
