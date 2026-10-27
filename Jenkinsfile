@@ -57,14 +57,36 @@ pipeline {
             }
         }
 
-        stage('Tests - PHPUnit') {
+        stage('Tests Unitaires') {
             steps {
                 sh '''
                     cp -n .env.test .env || cp -n .env.example .env || touch .env
                     docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
                       -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
                       -e SYMFONY_DEPRECATIONS_HELPER=999999 \
-                      composer:2 vendor/bin/phpunit --testdox
+                      composer:2 vendor/bin/phpunit --testsuite=Unit --testdox
+                '''
+            }
+        }
+
+        stage('Tests Integration BDD') {
+            steps {
+                sh '''
+                    docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
+                      -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
+                      -e SYMFONY_DEPRECATIONS_HELPER=999999 \
+                      composer:2 vendor/bin/phpunit --testsuite=Integration --testdox
+                '''
+            }
+        }
+
+        stage('Tests Fonctionnels') {
+            steps {
+                sh '''
+                    docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
+                      -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
+                      -e SYMFONY_DEPRECATIONS_HELPER=999999 \
+                      composer:2 vendor/bin/phpunit --testsuite=Functional --testdox
                 '''
             }
         }
