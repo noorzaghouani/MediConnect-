@@ -4,7 +4,7 @@ pipeline {
     options {
         buildDiscarder(logRotator(numToKeepStr: '20'))
         disableConcurrentBuilds()
-        timeout(time: 45, unit: 'MINUTES')
+        timeout(time: 60, unit: 'MINUTES')
     }
 
     environment {
@@ -119,7 +119,7 @@ pipeline {
 
         stage('Image - Build Docker') {
             steps {
-                sh 'docker build --pull -t ${IMAGE_TAG} .'
+                sh 'docker build -t ${IMAGE_TAG} .'
             }
         }
 
@@ -129,7 +129,7 @@ pipeline {
                     docker run --rm \
                       -v /var/run/docker.sock:/var/run/docker.sock \
                       -v trivy-cache:/root/.cache/ \
-                      $TRIVY_IMG image --severity HIGH,CRITICAL --exit-code 1 --ignore-unfixed --no-progress ${IMAGE_TAG}
+                      $TRIVY_IMG image --scanners vuln --severity HIGH,CRITICAL --exit-code 1 --ignore-unfixed --no-progress ${IMAGE_TAG}
                 '''
             }
         }

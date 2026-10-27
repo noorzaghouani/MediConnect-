@@ -18,13 +18,12 @@ RUN a2enmod rewrite
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 
 WORKDIR /var/www/html
-COPY . .
-COPY --from=vendor-builder /app/vendor ./vendor
+COPY --chown=www-data:www-data . .
+COPY --chown=www-data:www-data --from=vendor-builder /app/vendor ./vendor
 
 RUN mkdir -p /var/www/html/var/uploads/diplomes \
              /var/www/html/var/cache \
-             /var/www/html/var/log \
-    && chown -R www-data:www-data /var/www/html
+             /var/www/html/var/log
 
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
