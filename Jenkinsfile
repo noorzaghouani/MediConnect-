@@ -60,9 +60,10 @@ pipeline {
         stage('Tests Unitaires') {
             steps {
                 sh '''
-                    cp -n .env.test .env || cp -n .env.example .env || touch .env
+                    cp -n .env.example .env || touch .env
                     docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
                       -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
+                      -e MESSENGER_TRANSPORT_DSN="doctrine://default?auto_setup=0" \
                       -e SYMFONY_DEPRECATIONS_HELPER=999999 \
                       composer:2 vendor/bin/phpunit --testsuite=Unit --testdox
                 '''
@@ -74,6 +75,7 @@ pipeline {
                 sh '''
                     docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
                       -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
+                      -e MESSENGER_TRANSPORT_DSN="doctrine://default?auto_setup=0" \
                       -e SYMFONY_DEPRECATIONS_HELPER=999999 \
                       composer:2 vendor/bin/phpunit --testsuite=Integration --testdox
                 '''
@@ -85,6 +87,7 @@ pipeline {
                 sh '''
                     docker run --rm --volumes-from jenkins -w "$WORKSPACE" \
                       -e APP_ENV=test -e APP_SECRET=jenkins_dummy_secret \
+                      -e MESSENGER_TRANSPORT_DSN="doctrine://default?auto_setup=0" \
                       -e SYMFONY_DEPRECATIONS_HELPER=999999 \
                       composer:2 vendor/bin/phpunit --testsuite=Functional --testdox
                 '''
