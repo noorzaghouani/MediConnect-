@@ -10,12 +10,24 @@ if [ -n "$DATABASE_URL" ]; then
         $user = $u["user"] ?? "mediconnect_app";
         $pass = isset($u["pass"]) ? urldecode($u["pass"]) : getenv("APP_DB_PASSWORD");
         $db   = ltrim($u["path"] ?? "/mediconnect", "/");
-        new PDO("mysql:host=" . $host . ";port=" . $port . ";dbname=" . $db, $user, $pass);
+        try {
+            new PDO("mysql:host=" . $host . ";port=" . $port . ";dbname=" . $db, $user, $pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+            exit(0);
+        } catch (\Throwable $e) {
+            exit(1);
+        }
     ' 2>/dev/null; do
         sleep 2
     done
 else
-    until php -r "new PDO('mysql:host=database;port=3306;dbname=mediconnect', 'mediconnect_app', getenv('APP_DB_PASSWORD'));" 2>/dev/null; do
+    until php -r "
+        try {
+            new PDO('mysql:host=database;port=3306;dbname=mediconnect', 'mediconnect_app', getenv('APP_DB_PASSWORD'), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+            exit(0);
+        } catch (\Throwable \$e) {
+            exit(1);
+        }
+    " 2>/dev/null; do
         sleep 2
     done
 fi

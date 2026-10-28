@@ -13,10 +13,9 @@ services:
 
   # -----------------------------------------------------------------------
   # Application Symfony — Staging
-  # Utilise l'image publiée sur GHCR.
   # Port 8001 pour éviter tout conflit avec la prod (port 80/443).
   # -----------------------------------------------------------------------
-  app-staging:
+  app:
     image: ${GHCR_IMAGE}:${GIT_COMMIT}
     ports:
       - "8001:80"
@@ -29,7 +28,7 @@ services:
       - DATABASE_URL=mysql://mediconnect_app:${STAGING_DB_PASSWORD}@database:3306/mediconnect?serverVersion=10.4.32-MariaDB&charset=utf8mb4
       - MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
     depends_on:
-      database-staging:
+      database:
         condition: service_healthy
     networks:
       - staging_net
@@ -38,9 +37,9 @@ services:
   # -----------------------------------------------------------------------
   # Base de données — Staging (MariaDB 10.4 isolée)
   # Base `mediconnect` — volume `db_data_staging` dédié.
-  # Alias réseau `database` pour que app s'y connecte de façon transparente.
+  # Service nommé `database` pour correspondre naturellement au nom d'hôte Docker.
   # -----------------------------------------------------------------------
-  database-staging:
+  database:
     image: mariadb:10.4
     environment:
       - MYSQL_ROOT_PASSWORD=${STAGING_DB_PASSWORD}
@@ -52,12 +51,11 @@ services:
       - db_data_staging:/var/lib/mysql
       - ./docker/init-mediconnect-user.sh:/docker-entrypoint-initdb.d/init-mediconnect-user.sh
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${STAGING_DB_PASSWORD}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$MYSQL_ROOT_PASSWORD\" >/dev/null 2>&1 || exit 1"]
       interval: 5s
       timeout: 5s
-      retries: 15
+      retries: 25
+      start_period: 20s
     networks:
-      staging_net:
-        aliases:
-          - database
+      - staging_net
     restart: "no"

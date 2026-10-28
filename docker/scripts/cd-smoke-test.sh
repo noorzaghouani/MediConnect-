@@ -20,7 +20,7 @@ fi
 MAX_RETRIES=5
 RETRY_DELAY=5
 CURL_TIMEOUT=10
-APP_CONTAINER="mediconnect-staging-app-staging-1"
+APP_CONTAINER="mediconnect-staging-app-1"
 
 # Liste des endpoints à tester (chemin relatif)
 ENDPOINTS=(

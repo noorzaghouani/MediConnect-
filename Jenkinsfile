@@ -382,6 +382,7 @@ pipeline {
                     -f $WORKSPACE/docker-compose.staging.yml \
                     -p mediconnect-staging \
                     down --volumes --remove-orphans 2>/dev/null || true
+                docker volume rm -f mediconnect-staging_db_data_staging 2>/dev/null || true
                 # Supprimer l\'override prod temporaire
                 rm -f $WORKSPACE/docker-compose.prod-override.yml || true
                 echo "Teardown staging terminé."
