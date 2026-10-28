@@ -170,10 +170,10 @@ pipeline {
                     docker run --rm \
                       -v /var/run/docker.sock:/var/run/docker.sock \
                       -v trivy-cache:/root/.cache/ \
-                      -v $WORKSPACE/sbom:/output \
+                      --volumes-from jenkins \
                       $TRIVY_IMG image \
                       --format spdx-json \
-                      --output /output/sbom-${GIT_COMMIT}.json \
+                      --output $WORKSPACE/sbom/sbom-${GIT_COMMIT}.json \
                       ${IMAGE_TAG}
                     echo "SBOM généré : sbom/sbom-${GIT_COMMIT}.json"
                 '''
@@ -215,11 +215,11 @@ pipeline {
                     # -l HIGH : rapporter seulement HIGH et au-dessus
                     docker run --rm \
                       --network host \
-                      -v $WORKSPACE/zap-reports:/zap/wrk:rw \
+                      --volumes-from jenkins \
                       ghcr.io/zaproxy/zaproxy:stable \
                       zap-baseline.py \
                       -t http://localhost:8001 \
-                      -r zap-report.html \
+                      -r $WORKSPACE/zap-reports/zap-report.html \
                       -l HIGH \
                       -z "-config alert.maxInstances=10" || ZAP_EXIT=$?
                     # ZAP exit 2 = alertes WARN seulement → toléré
