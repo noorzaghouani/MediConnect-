@@ -1,0 +1,59 @@
+# docker-compose.staging.yml — Environnement de staging isolé
+# NE JAMAIS partager les volumes avec la production.
+# Utilisé exclusivement par le pipeline Jenkins CD (stage staging).
+
+networks:
+  staging_net:
+    driver: bridge
+
+volumes:
+  db_data_staging:
+
+services:
+
+  # -----------------------------------------------------------------------
+  # Application Symfony — Staging
+  # Utilise l'image publiée sur GHCR (jamais un build local).
+  # Port 8001 pour éviter tout conflit avec la prod (port 80/443).
+  # -----------------------------------------------------------------------
+  app-staging:
+    image: ${GHCR_IMAGE}:${GIT_COMMIT}
+    ports:
+      - "8001:80"
+    volumes:
+      - ./var/uploads-staging:/var/www/html/var/uploads
+    environment:
+      - APP_ENV=prod
+      - APP_SECRET=${STAGING_APP_SECRET}
+      - DATABASE_URL=mysql://mediconnect_app:${STAGING_DB_PASSWORD}@database-staging:3306/mediconnect_staging?serverVersion=10.4.32-MariaDB&charset=utf8mb4
+      - MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
+    depends_on:
+      database-staging:
+        condition: service_healthy
+    networks:
+      - staging_net
+    restart: "no"
+
+  # -----------------------------------------------------------------------
+  # Base de données — Staging (MariaDB 10.4 isolée)
+  # Base `mediconnect_staging` — volume `db_data_staging` dédié.
+  # -----------------------------------------------------------------------
+  database-staging:
+    image: mariadb:10.4
+    environment:
+      - MYSQL_ROOT_PASSWORD=${STAGING_DB_ROOT_PASSWORD:-staging_root_pass}
+      - MYSQL_DATABASE=mediconnect_staging
+      - MYSQL_USER=mediconnect_app
+      - MYSQL_PASSWORD=${STAGING_DB_PASSWORD}
+    volumes:
+      - db_data_staging:/var/lib/mysql
+      # Réutilise le même script d'init que la prod
+      - ./docker/init-mediconnect-user.sh:/docker-entrypoint-initdb.d/init-mediconnect-user.sh
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${STAGING_DB_ROOT_PASSWORD:-staging_root_pass}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks:
+      - staging_net
+    restart: "no"
