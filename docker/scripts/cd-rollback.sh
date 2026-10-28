@@ -56,9 +56,8 @@ echo "  ✅ Application rollbackée vers : ${PREVIOUS_IMAGE}"
 # --- 2. Restauration de la base de données (si fourni) -------------------
 if [ -n "${BACKUP_SQL_FILE}" ] && [ -f "${BACKUP_SQL_FILE}" ]; then
     echo "[2/3] Restauration de la base de données depuis ${BACKUP_SQL_FILE}..."
-    # Injecter le dump dans MariaDB
     docker exec -i "${DB_CONTAINER}" \
-        mysql -u root -p"${MYSQL_ROOT_PASSWORD}" mediconnect \
+        sh -c 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" mediconnect' \
         < "${BACKUP_SQL_FILE}"
     echo "  ✅ Base de données restaurée."
 else
@@ -68,7 +67,12 @@ fi
 # --- 3. Vérification post-rollback ---------------------------------------
 echo "[3/3] Vérification du service après rollback..."
 sleep 10
-HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 http://localhost/ 2>/dev/null || echo "000")
+TARGET_HOST="localhost"
+if getent hosts host.docker.internal >/dev/null 2>&1; then
+    TARGET_HOST="host.docker.internal"
+fi
+
+HTTP_STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" --max-time 10 -H "Host: mediconnect.com" "https://${TARGET_HOST}/" 2>/dev/null || echo "000")
 if [ "${HTTP_STATUS}" = "200" ] || [ "${HTTP_STATUS}" = "302" ]; then
     echo "  ✅ Application opérationnelle après rollback (HTTP ${HTTP_STATUS})."
 else

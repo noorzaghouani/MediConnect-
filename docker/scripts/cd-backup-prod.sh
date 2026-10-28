@@ -30,13 +30,7 @@ mkdir -p "${BACKUP_DIR}"
 # --- 1. Dump de la base de données ---------------------------------------
 echo "[1/3] Dump MariaDB depuis ${DB_CONTAINER}..."
 docker exec "${DB_CONTAINER}" \
-    mysqldump \
-    -u root \
-    -p"${MYSQL_ROOT_PASSWORD}" \
-    --single-transaction \
-    --routines \
-    --triggers \
-    --databases mediconnect \
+    sh -c 'mysqldump -u root -p"$MYSQL_ROOT_PASSWORD" --single-transaction --routines --triggers --databases mediconnect' \
     > "${SQL_FILE}"
 
 if [ ! -s "${SQL_FILE}" ]; then
@@ -63,13 +57,11 @@ echo "[3/3] Rotation des backups (conservation des ${MAX_BACKUPS} derniers)..."
 BACKUP_COUNT=$(find "${BACKUP_DIR}" -maxdepth 1 -name "db_*.sql" | wc -l)
 if [ "${BACKUP_COUNT}" -gt "${MAX_BACKUPS}" ]; then
     TO_DELETE=$((BACKUP_COUNT - MAX_BACKUPS))
-    # Trier par date croissante et supprimer les plus anciens
     find "${BACKUP_DIR}" -maxdepth 1 -name "db_*.sql" \
         | sort \
         | head -n "${TO_DELETE}" \
         | xargs rm -f
     echo "  ✅ ${TO_DELETE} ancien(s) backup(s) SQL supprimé(s)."
-    # Même logique pour les archives uploads
     find "${BACKUP_DIR}" -maxdepth 1 -name "uploads_*.tar.gz" \
         | sort \
         | head -n "${TO_DELETE}" \

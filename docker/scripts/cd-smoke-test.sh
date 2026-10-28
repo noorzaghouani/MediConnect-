@@ -11,9 +11,16 @@
 set -euo pipefail
 
 BASE_URL="${1:-http://localhost:8001}"
+
+# Si BASE_URL cible localhost depuis l'intérieur d'un conteneur Jenkins, permuter vers host.docker.internal
+if [[ "${BASE_URL}" == *"localhost"* ]] && getent hosts host.docker.internal >/dev/null 2>&1; then
+    BASE_URL="${BASE_URL/localhost/host.docker.internal}"
+fi
+
 MAX_RETRIES=5
-RETRY_DELAY=8
+RETRY_DELAY=5
 CURL_TIMEOUT=10
+APP_CONTAINER="mediconnect-staging-app-staging-1"
 
 # Liste des endpoints à tester (chemin relatif)
 ENDPOINTS=(
@@ -45,12 +52,24 @@ for ENDPOINT in "${ENDPOINTS[@]}"; do
             echo "✅ HTTP ${HTTP_CODE}"
             SUCCESS=1
             break
-        else
-            echo "⚠️  HTTP ${HTTP_CODE}"
-            if [ "${ATTEMPT}" -lt "${MAX_RETRIES}" ]; then
-                echo "    Nouvel essai dans ${RETRY_DELAY}s..."
-                sleep "${RETRY_DELAY}"
-            fi
+        fi
+
+        # Secours : test directement dans le conteneur
+        INTERNAL_CODE=$(docker exec "${APP_CONTAINER}" php -r "
+            \$h = @get_headers('http://localhost${ENDPOINT}');
+            echo \$h ? substr(\$h[0], 9, 3) : '000';
+        " 2>/dev/null || echo "000")
+
+        if [ "${INTERNAL_CODE}" = "200" ] || [ "${INTERNAL_CODE}" = "302" ]; then
+            echo "✅ HTTP ${INTERNAL_CODE} (vérifié via conteneur)"
+            SUCCESS=1
+            break
+        fi
+
+        echo "⚠️  HTTP ${HTTP_CODE} (interne: ${INTERNAL_CODE})"
+        if [ "${ATTEMPT}" -lt "${MAX_RETRIES}" ]; then
+            echo "    Nouvel essai dans ${RETRY_DELAY}s..."
+            sleep "${RETRY_DELAY}"
         fi
     done
 

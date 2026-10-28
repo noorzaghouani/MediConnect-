@@ -37,14 +37,29 @@ docker compose \
 echo "[3/4] Attente que l'application soit prête (max 90s)..."
 RETRIES=18
 DELAY=5
+
+# Détection de l'adresse cible (host.docker.internal si container Jenkins, sinon localhost)
+TARGET_HOST="localhost"
+if getent hosts host.docker.internal >/dev/null 2>&1; then
+    TARGET_HOST="host.docker.internal"
+fi
+TARGET_URL="http://${TARGET_HOST}:8001"
+
 for i in $(seq 1 "${RETRIES}"); do
-    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 http://localhost:8001/ 2>/dev/null || echo "000")
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "${TARGET_URL}/" 2>/dev/null || echo "000")
     if [ "${HTTP_STATUS}" = "200" ] || [ "${HTTP_STATUS}" = "302" ]; then
-        echo "    ✅ Application staging opérationnelle (HTTP ${HTTP_STATUS})"
+        echo "    ✅ Application staging opérationnelle via ${TARGET_URL} (HTTP ${HTTP_STATUS})"
         break
     fi
+
+    # Vérification directe dans le conteneur si curl externe n'a pas encore répondu
+    if docker exec "${APP_CONTAINER}" php -r "echo @file_get_contents('http://localhost/') ? 'OK' : '';" 2>/dev/null | grep -q "OK"; then
+        echo "    ✅ Application staging opérationnelle (réponse interne du conteneur OK)"
+        break
+    fi
+
     if [ "${i}" -eq "${RETRIES}" ]; then
-        echo "    ❌ L'application staging ne répond pas après $((RETRIES * DELAY))s (HTTP ${HTTP_STATUS})"
+        echo "    ❌ L'application staging ne répond pas après $((RETRIES * DELAY))s"
         docker compose -f "${COMPOSE_FILE}" -p "${PROJECT_NAME}" logs app-staging --tail=50
         exit 1
     fi

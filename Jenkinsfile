@@ -186,8 +186,6 @@ pipeline {
             environment {
                 STAGING_DB_PASSWORD = credentials('staging-db-password')
                 STAGING_APP_SECRET  = credentials('staging-app-secret')
-                // Mot de passe root staging : dérivé ou identique au staging-db-password
-                STAGING_DB_ROOT_PASSWORD = credentials('staging-db-password')
             }
             steps {
                 withCredentials([string(credentialsId: 'ghcr-token', variable: 'GHCR_TOKEN')]) {
@@ -202,7 +200,13 @@ pipeline {
         // ── Étape 5 : Smoke Tests Staging ────────────────────────────────
         stage('CD - Smoke Tests Staging') {
             steps {
-                sh 'bash $WORKSPACE/docker/scripts/cd-smoke-test.sh http://localhost:8001'
+                sh '''
+                    TARGET_HOST="localhost"
+                    if getent hosts host.docker.internal >/dev/null 2>&1; then
+                        TARGET_HOST="host.docker.internal"
+                    fi
+                    bash $WORKSPACE/docker/scripts/cd-smoke-test.sh "http://${TARGET_HOST}:8001"
+                '''
             }
         }
 
@@ -211,15 +215,19 @@ pipeline {
             steps {
                 sh '''
                     mkdir -p $WORKSPACE/zap-reports
-                    # -I  : ne pas faire échouer le build sur les alertes en-dessous du seuil
-                    # -l HIGH : rapporter seulement HIGH et au-dessus
+                    TARGET_HOST="localhost"
+                    if getent hosts host.docker.internal >/dev/null 2>&1; then
+                        TARGET_HOST="host.docker.internal"
+                    fi
                     docker run --rm \
+                      -u 0 \
                       --network host \
+                      --add-host=host.docker.internal:host-gateway \
                       --volumes-from jenkins \
                       ghcr.io/zaproxy/zaproxy:stable \
                       zap-baseline.py \
-                      -t http://localhost:8001 \
-                      -r $WORKSPACE/zap-reports/zap-report.html \
+                      -t "http://${TARGET_HOST}:8001" \
+                      -r "$WORKSPACE/zap-reports/zap-report.html" \
                       -l HIGH \
                       -z "-config alert.maxInstances=10" || ZAP_EXIT=$?
                     # ZAP exit 2 = alertes WARN seulement → toléré
@@ -278,7 +286,13 @@ pipeline {
 
                     for (int i = 1; i <= maxRetries; i++) {
                         def status = sh(
-                            script: "curl -s -o /dev/null -w '%{http_code}' --max-time 10 https://mediconnect.com/ 2>/dev/null || echo '000'",
+                            script: '''
+                                TARGET_HOST="localhost"
+                                if getent hosts host.docker.internal >/dev/null 2>&1; then
+                                    TARGET_HOST="host.docker.internal"
+                                fi
+                                curl -k -s -o /dev/null -w "%{http_code}" --max-time 10 -H "Host: mediconnect.com" "https://${TARGET_HOST}/" 2>/dev/null || echo "000"
+                            ''',
                             returnStdout: true
                         ).trim()
 

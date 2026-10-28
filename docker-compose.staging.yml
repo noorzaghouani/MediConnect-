@@ -13,7 +13,7 @@ services:
 
   # -----------------------------------------------------------------------
   # Application Symfony — Staging
-  # Utilise l'image publiée sur GHCR (jamais un build local).
+  # Utilise l'image publiée sur GHCR.
   # Port 8001 pour éviter tout conflit avec la prod (port 80/443).
   # -----------------------------------------------------------------------
   app-staging:
@@ -25,7 +25,8 @@ services:
     environment:
       - APP_ENV=prod
       - APP_SECRET=${STAGING_APP_SECRET}
-      - DATABASE_URL=mysql://mediconnect_app:${STAGING_DB_PASSWORD}@database-staging:3306/mediconnect_staging?serverVersion=10.4.32-MariaDB&charset=utf8mb4
+      - APP_DB_PASSWORD=${STAGING_DB_PASSWORD}
+      - DATABASE_URL=mysql://mediconnect_app:${STAGING_DB_PASSWORD}@database:3306/mediconnect?serverVersion=10.4.32-MariaDB&charset=utf8mb4
       - MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
     depends_on:
       database-staging:
@@ -36,24 +37,27 @@ services:
 
   # -----------------------------------------------------------------------
   # Base de données — Staging (MariaDB 10.4 isolée)
-  # Base `mediconnect_staging` — volume `db_data_staging` dédié.
+  # Base `mediconnect` — volume `db_data_staging` dédié.
+  # Alias réseau `database` pour que app s'y connecte de façon transparente.
   # -----------------------------------------------------------------------
   database-staging:
     image: mariadb:10.4
     environment:
-      - MYSQL_ROOT_PASSWORD=${STAGING_DB_ROOT_PASSWORD:-staging_root_pass}
-      - MYSQL_DATABASE=mediconnect_staging
+      - MYSQL_ROOT_PASSWORD=${STAGING_DB_PASSWORD}
+      - MYSQL_DATABASE=mediconnect
       - MYSQL_USER=mediconnect_app
       - MYSQL_PASSWORD=${STAGING_DB_PASSWORD}
+      - APP_DB_PASSWORD=${STAGING_DB_PASSWORD}
     volumes:
       - db_data_staging:/var/lib/mysql
-      # Réutilise le même script d'init que la prod
       - ./docker/init-mediconnect-user.sh:/docker-entrypoint-initdb.d/init-mediconnect-user.sh
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${STAGING_DB_ROOT_PASSWORD:-staging_root_pass}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${STAGING_DB_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 15
     networks:
-      - staging_net
+      staging_net:
+        aliases:
+          - database
     restart: "no"
