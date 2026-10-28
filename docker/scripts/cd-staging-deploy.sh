@@ -14,7 +14,8 @@
 set -euo pipefail
 
 COMPOSE_FILE="${WORKSPACE}/docker-compose.staging.yml"
-APP_CONTAINER="mediconnect--app-staging-1"
+PROJECT_NAME="mediconnect-staging"
+APP_CONTAINER="mediconnect-staging-app-staging-1"
 
 echo "============================================================"
 echo " STAGING DEPLOY — Image: ${GHCR_IMAGE}:${GIT_COMMIT}"
@@ -28,7 +29,7 @@ docker pull "${GHCR_IMAGE}:${GIT_COMMIT}"
 echo "[2/4] Démarrage des conteneurs staging..."
 docker compose \
   -f "${COMPOSE_FILE}" \
-  -p mediconnect- \
+  -p "${PROJECT_NAME}" \
   up -d --remove-orphans \
   --force-recreate
 
@@ -44,7 +45,7 @@ for i in $(seq 1 "${RETRIES}"); do
     fi
     if [ "${i}" -eq "${RETRIES}" ]; then
         echo "    ❌ L'application staging ne répond pas après $((RETRIES * DELAY))s (HTTP ${HTTP_STATUS})"
-        docker compose -f "${COMPOSE_FILE}" -p mediconnect- logs app-staging --tail=50
+        docker compose -f "${COMPOSE_FILE}" -p "${PROJECT_NAME}" logs app-staging --tail=50
         exit 1
     fi
     echo "    ⏳ Tentative ${i}/${RETRIES} — HTTP ${HTTP_STATUS} — attente ${DELAY}s..."

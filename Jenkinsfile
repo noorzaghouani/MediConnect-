@@ -137,13 +137,12 @@ pipeline {
         }
 
         // ══════════════════════════════════════════════════════════════════
-        //  PIPELINE CD — Actif uniquement sur la branche main
+        //  PIPELINE CD
         //  Les stages CI ci-dessus ne sont PAS modifiés.
         // ══════════════════════════════════════════════════════════════════
 
         // ── Étape 1 : Publication GHCR ────────────────────────────────────
         stage('CD - Publication GHCR') {
-            when { branch 'main' }
             steps {
                 withCredentials([string(credentialsId: 'ghcr-token', variable: 'GHCR_TOKEN')]) {
                     sh '''
@@ -165,7 +164,6 @@ pipeline {
 
         // ── Étape 2 : SBOM & preuves de sécurité ─────────────────────────
         stage('CD - SBOM & Preuves Sécurité') {
-            when { branch 'main' }
             steps {
                 sh '''
                     mkdir -p $WORKSPACE/sbom
@@ -185,7 +183,6 @@ pipeline {
 
         // ── Étape 3+4 : Déploiement Staging + Migrations ─────────────────
         stage('CD - Déploiement Staging') {
-            when { branch 'main' }
             environment {
                 STAGING_DB_PASSWORD = credentials('staging-db-password')
                 STAGING_APP_SECRET  = credentials('staging-app-secret')
@@ -204,7 +201,6 @@ pipeline {
 
         // ── Étape 5 : Smoke Tests Staging ────────────────────────────────
         stage('CD - Smoke Tests Staging') {
-            when { branch 'main' }
             steps {
                 sh 'bash $WORKSPACE/docker/scripts/cd-smoke-test.sh http://localhost:8001'
             }
@@ -212,13 +208,11 @@ pipeline {
 
         // ── Étape 6 : DAST OWASP ZAP ─────────────────────────────────────
         stage('CD - DAST (OWASP ZAP)') {
-            when { branch 'main' }
             steps {
                 sh '''
                     mkdir -p $WORKSPACE/zap-reports
                     # -I  : ne pas faire échouer le build sur les alertes en-dessous du seuil
                     # -l HIGH : rapporter seulement HIGH et au-dessus
-                    # Le script retourne 1 si des alertes HIGH/CRITICAL sont trouvées
                     docker run --rm \
                       --network host \
                       -v $WORKSPACE/zap-reports:/zap/wrk:rw \
@@ -241,7 +235,6 @@ pipeline {
 
         // ── Étape 7 : Gate d'Approbation Manuelle ────────────────────────
         stage('CD - Approbation Manuelle') {
-            when { branch 'main' }
             steps {
                 timeout(time: 30, unit: 'MINUTES') {
                     input message: '🚀 Déployer en PRODUCTION ?',
@@ -253,7 +246,6 @@ pipeline {
 
         // ── Étape 8 : Sauvegarde Production ──────────────────────────────
         stage('CD - Sauvegarde Production') {
-            when { branch 'main' }
             steps {
                 sh '''
                     BACKUP_FILE=$(bash $WORKSPACE/docker/scripts/cd-backup-prod.sh | tail -1)
@@ -265,7 +257,6 @@ pipeline {
 
         // ── Étape 9 : Déploiement Production ─────────────────────────────
         stage('CD - Déploiement Production') {
-            when { branch 'main' }
             steps {
                 withCredentials([string(credentialsId: 'ghcr-token', variable: 'GHCR_TOKEN')]) {
                     sh '''
@@ -279,7 +270,6 @@ pipeline {
 
         // ── Étape 10 : Health Check Post-Déploiement + Rollback auto ─────
         stage('CD - Health Check Production') {
-            when { branch 'main' }
             steps {
                 script {
                     def maxRetries = 6
@@ -340,23 +330,30 @@ pipeline {
                 sh '''
                     git config user.email "jenkins@mediconnect.com"
                     git config user.name "Jenkins CI/CD"
-                    VERSION="v$(date +%Y.%m.%d)-${GIT_COMMIT:0:7}"
+                    SHORT_COMMIT=$(git rev-parse --short HEAD)
+                    VERSION="v$(date +%Y.%m.%d)-${SHORT_COMMIT}"
                     git tag -a "$VERSION" -m "Release $VERSION — Deploy automatique depuis Jenkins build #${BUILD_NUMBER}"
                     git push https://$GH_TOKEN@github.com/noorzaghouani/MediConnect-.git "$VERSION" || true
                     echo "Tag git créé : $VERSION"
                 '''
             }
-            // Étape 11b — Notification succès
-            emailext(
-                subject: "✅ MediConnect déployé en production — Build #${BUILD_NUMBER}",
-                body: """Le build <b>#${BUILD_NUMBER}</b> (commit <code>${GIT_COMMIT}</code>) a été déployé avec succès en production.<br/>
+            // Étape 11b — Notification succès (tolérant si pas de SMTP configuré)
+            script {
+                try {
+                    emailext(
+                        subject: "✅ MediConnect déployé en production — Build #${BUILD_NUMBER}",
+                        body: """Le build <b>#${BUILD_NUMBER}</b> (commit <code>${GIT_COMMIT}</code>) a été déployé avec succès en production.<br/>
 <br/>
 <b>Lien Jenkins :</b> <a href="${BUILD_URL}">${BUILD_URL}</a><br/>
 <b>Image GHCR :</b> ${GHCR_IMAGE}:${GIT_COMMIT}
 """,
-                mimeType: 'text/html',
-                to: 'admin@mediconnect.com'
-            )
+                        mimeType: 'text/html',
+                        to: 'admin@mediconnect.com'
+                    )
+                } catch (Exception e) {
+                    echo "Notification email non envoyée (serveur SMTP non configuré dans Jenkins) : ${e.message}"
+                }
+            }
             // Étape 12 — Nettoyage des images anciennes et backups périmés
             sh '''
                 echo "Nettoyage des images Docker de plus de 7 jours..."
@@ -368,19 +365,25 @@ pipeline {
             '''
         }
         failure {
-            // Notification échec
-            emailext(
-                subject: "❌ MediConnect — Échec pipeline Build #${BUILD_NUMBER}",
-                body: """Le pipeline a <b>échoué</b> au build <b>#${BUILD_NUMBER}</b>.<br/>
+            // Notification échec (tolérant si pas de SMTP configuré)
+            script {
+                try {
+                    emailext(
+                        subject: "❌ MediConnect — Échec pipeline Build #${BUILD_NUMBER}",
+                        body: """Le pipeline a <b>échoué</b> au build <b>#${BUILD_NUMBER}</b>.<br/>
 <br/>
 <b>Commit :</b> <code>${GIT_COMMIT}</code><br/>
 <b>Lien Jenkins :</b> <a href="${BUILD_URL}">${BUILD_URL}</a><br/>
 <br/>
 Vérifiez les logs Jenkins pour identifier la cause.
 """,
-                mimeType: 'text/html',
-                to: 'admin@mediconnect.com'
-            )
+                        mimeType: 'text/html',
+                        to: 'admin@mediconnect.com'
+                    )
+                } catch (Exception e) {
+                    echo "Notification email non envoyée (serveur SMTP non configuré dans Jenkins) : ${e.message}"
+                }
+            }
         }
         always {
             // Nettoyage staging (qu'il y ait eu succès ou échec)
@@ -388,7 +391,7 @@ Vérifiez les logs Jenkins pour identifier la cause.
                 echo "Teardown de l\'environnement staging..."
                 docker compose \
                     -f $WORKSPACE/docker-compose.staging.yml \
-                    -p mediconnect- \
+                    -p mediconnect-staging \
                     down --volumes --remove-orphans 2>/dev/null || true
                 # Supprimer l\'override prod temporaire
                 rm -f $WORKSPACE/docker-compose.prod-override.yml || true
