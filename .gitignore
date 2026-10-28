@@ -29,6 +29,7 @@
 /public/uploads/
 /node_modules/
 *.log
+/docker/certs/
 ###< project-specific ###
 
 ###> symfony/webpack-encore-bundle ###

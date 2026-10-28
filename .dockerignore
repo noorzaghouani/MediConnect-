@@ -17,3 +17,4 @@ tests/
 sonar-project.properties
 diagrammes/
 images/
+docker/certs/
