@@ -337,23 +337,11 @@ pipeline {
                     echo "Tag git créé : $VERSION"
                 '''
             }
-            // Étape 11b — Notification succès (tolérant si pas de SMTP configuré)
-            script {
-                try {
-                    emailext(
-                        subject: "✅ MediConnect déployé en production — Build #${BUILD_NUMBER}",
-                        body: """Le build <b>#${BUILD_NUMBER}</b> (commit <code>${GIT_COMMIT}</code>) a été déployé avec succès en production.<br/>
-<br/>
-<b>Lien Jenkins :</b> <a href="${BUILD_URL}">${BUILD_URL}</a><br/>
-<b>Image GHCR :</b> ${GHCR_IMAGE}:${GIT_COMMIT}
-""",
-                        mimeType: 'text/html',
-                        to: 'admin@mediconnect.com'
-                    )
-                } catch (Exception e) {
-                    echo "Notification email non envoyée (serveur SMTP non configuré dans Jenkins) : ${e.message}"
-                }
-            }
+            // Étape 11b — Notification succès
+            echo "═══════════════════════════════════════════════════════════"
+            echo "✅ DÉPLOIEMENT EN PRODUCTION RÉUSSI (Build #${BUILD_NUMBER})"
+            echo "   Image : ${GHCR_IMAGE}:${GIT_COMMIT}"
+            echo "═══════════════════════════════════════════════════════════"
             // Étape 12 — Nettoyage des images anciennes et backups périmés
             sh '''
                 echo "Nettoyage des images Docker de plus de 7 jours..."
@@ -365,25 +353,12 @@ pipeline {
             '''
         }
         failure {
-            // Notification échec (tolérant si pas de SMTP configuré)
-            script {
-                try {
-                    emailext(
-                        subject: "❌ MediConnect — Échec pipeline Build #${BUILD_NUMBER}",
-                        body: """Le pipeline a <b>échoué</b> au build <b>#${BUILD_NUMBER}</b>.<br/>
-<br/>
-<b>Commit :</b> <code>${GIT_COMMIT}</code><br/>
-<b>Lien Jenkins :</b> <a href="${BUILD_URL}">${BUILD_URL}</a><br/>
-<br/>
-Vérifiez les logs Jenkins pour identifier la cause.
-""",
-                        mimeType: 'text/html',
-                        to: 'admin@mediconnect.com'
-                    )
-                } catch (Exception e) {
-                    echo "Notification email non envoyée (serveur SMTP non configuré dans Jenkins) : ${e.message}"
-                }
-            }
+            // Notification échec
+            echo "═══════════════════════════════════════════════════════════"
+            echo "❌ ÉCHEC DU PIPELINE (Build #${BUILD_NUMBER})"
+            echo "   Commit : ${GIT_COMMIT}"
+            echo "   Consultez la console Jenkins pour les détails de l'erreur."
+            echo "═══════════════════════════════════════════════════════════"
         }
         always {
             // Nettoyage staging (qu'il y ait eu succès ou échec)
