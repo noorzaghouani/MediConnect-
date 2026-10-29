@@ -21,6 +21,8 @@ echo "============================================================"
 echo " STAGING DEPLOY — Image: ${GHCR_IMAGE}:${GIT_COMMIT}"
 echo "============================================================"
 
+export MYSQL_ROOT_PASSWORD="${STAGING_DB_PASSWORD}"
+
 # --- 0. Nettoyage préventif des anciens conteneurs/volumes staging -------
 echo "[0/4] Nettoyage préventif des conteneurs et volumes staging existants..."
 docker compose \
