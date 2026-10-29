@@ -227,12 +227,9 @@ pipeline {
                       --network host \
                       --add-host=host.docker.internal:host-gateway \
                       --volumes-from jenkins \
+                      -v zap-wrk:/zap/wrk:rw \
                       ghcr.io/zaproxy/zaproxy:stable \
-                      zap-baseline.py \
-                      -t "http://${TARGET_HOST}:8001" \
-                      -r "$WORKSPACE/zap-reports/zap-report.html" \
-                      -l WARN \
-                      -z "-config alert.maxInstances=10" || ZAP_EXIT=$?
+                      sh -c 'zap-baseline.py -t "http://${TARGET_HOST}:8001" -r zap-report.html -l WARN -z "-config alert.maxInstances=10" || ZAP_EXIT=$?; cp /zap/wrk/zap-report.html "$WORKSPACE/zap-reports/zap-report.html" 2>/dev/null || true; exit ${ZAP_EXIT:-0}' || ZAP_EXIT=$?
                     # ZAP exit 2 = alertes WARN seulement → toléré
                     # ZAP exit 1 = alertes HIGH/CRITICAL → bloquant
                     if [ "${ZAP_EXIT:-0}" -eq 1 ]; then

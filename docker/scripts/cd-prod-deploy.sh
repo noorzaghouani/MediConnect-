@@ -63,27 +63,38 @@ fi
 # --- 1. Mise à jour de l'image dans docker-compose.yml ------------------
 echo "[1/4] Mise à jour de l'image dans docker-compose.yml..."
 
-# S'assurer que .env.local existe pour Docker Compose (requis par docker-compose.yml)
-if [ ! -f "${WORKSPACE}/.env.local" ]; then
-    echo "  ℹ️  Création de .env.local à partir de l'environnement de production existant..."
-    docker inspect "${APP_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null \
-        | grep -E '^(APP_ENV|APP_SECRET|APP_DB_PASSWORD|DATABASE_URL|MYSQL_ROOT_PASSWORD|ADMIN_EMAIL|ADMIN_PASSWORD)=' \
-        > "${WORKSPACE}/.env.local" || true
-    touch "${WORKSPACE}/.env.local"
-    echo "  ✅ Fichier .env.local configuré pour Docker Compose."
-fi
+# Récupérer les mots de passe de production depuis le conteneur MariaDB existant
+DB_CONTAINER="mediconnect--database-1"
+DB_PASS=$(docker inspect "${DB_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^APP_DB_PASSWORD=' | cut -d= -f2- || echo "")
+ROOT_PASS=$(docker inspect "${DB_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^MYSQL_ROOT_PASSWORD=' | cut -d= -f2- || echo "")
+APP_SECRET_VAL=$(docker inspect "${APP_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^APP_SECRET=' | cut -d= -f2- || echo "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4")
 
-# Utiliser sed pour remplacer la ligne `build: .` ou l'image existante
-# On injecte via variable d'environnement Docker Compose (APP_IMAGE)
+export APP_DB_PASSWORD="${DB_PASS:-11376498nZ}"
+export MYSQL_ROOT_PASSWORD="${ROOT_PASS:-11376498nZ}"
 export APP_IMAGE="${IMAGE_REF}"
 
-# Créer un override temporaire pour forcer l'image sans modifier docker-compose.yml
+# Créer .env.local avec les credentials valides pour Docker Compose
+cat > "${WORKSPACE}/.env.local" <<EOF
+APP_ENV=prod
+APP_SECRET=${APP_SECRET_VAL}
+APP_DB_PASSWORD=${APP_DB_PASSWORD}
+MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+DATABASE_URL=mysql://mediconnect_app:${APP_DB_PASSWORD}@database:3306/mediconnect?serverVersion=10.4.32-MariaDB&charset=utf8mb4
+EOF
+echo "  ✅ Fichier .env.local configuré avec succès."
+
+# Créer un override temporaire pour forcer l'image et la DATABASE_URL valide
 OVERRIDE_FILE="${WORKSPACE}/docker-compose.prod-override.yml"
 cat > "${OVERRIDE_FILE}" <<EOF
 services:
   app:
     image: ${IMAGE_REF}
     build: !reset null
+    environment:
+      - APP_ENV=prod
+      - APP_SECRET=${APP_SECRET_VAL}
+      - APP_DB_PASSWORD=${APP_DB_PASSWORD}
+      - DATABASE_URL=mysql://mediconnect_app:${APP_DB_PASSWORD}@database:3306/mediconnect?serverVersion=10.4.32-MariaDB&charset=utf8mb4
 EOF
 
 echo "  ✅ Override créé : ${OVERRIDE_FILE}"

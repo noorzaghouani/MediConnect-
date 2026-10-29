@@ -39,13 +39,20 @@ echo ""
 # --- 1. Rollback de l'application ----------------------------------------
 echo "[1/3] Rollback de l'image Docker..."
 
-# S'assurer que .env.local existe pour Docker Compose
-if [ ! -f "${WORKSPACE}/.env.local" ]; then
-    docker inspect "${APP_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null \
-        | grep -E '^(APP_ENV|APP_SECRET|APP_DB_PASSWORD|DATABASE_URL|MYSQL_ROOT_PASSWORD|ADMIN_EMAIL|ADMIN_PASSWORD)=' \
-        > "${WORKSPACE}/.env.local" || true
-    touch "${WORKSPACE}/.env.local"
-fi
+DB_PASS=$(docker inspect "${DB_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^APP_DB_PASSWORD=' | cut -d= -f2- || echo "")
+ROOT_PASS=$(docker inspect "${DB_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^MYSQL_ROOT_PASSWORD=' | cut -d= -f2- || echo "")
+APP_SECRET_VAL=$(docker inspect "${APP_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null | grep '^APP_SECRET=' | cut -d= -f2- || echo "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4")
+
+export APP_DB_PASSWORD="${DB_PASS:-11376498nZ}"
+export MYSQL_ROOT_PASSWORD="${ROOT_PASS:-11376498nZ}"
+
+cat > "${WORKSPACE}/.env.local" <<EOF
+APP_ENV=prod
+APP_SECRET=${APP_SECRET_VAL}
+APP_DB_PASSWORD=${APP_DB_PASSWORD}
+MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+DATABASE_URL=mysql://mediconnect_app:${APP_DB_PASSWORD}@database:3306/mediconnect?serverVersion=10.4.32-MariaDB&charset=utf8mb4
+EOF
 
 OVERRIDE_FILE="${WORKSPACE}/docker-compose.prod-override.yml"
 cat > "${OVERRIDE_FILE}" <<EOF
@@ -53,6 +60,11 @@ services:
   app:
     image: ${PREVIOUS_IMAGE}
     build: !reset null
+    environment:
+      - APP_ENV=prod
+      - APP_SECRET=${APP_SECRET_VAL}
+      - APP_DB_PASSWORD=${APP_DB_PASSWORD}
+      - DATABASE_URL=mysql://mediconnect_app:${APP_DB_PASSWORD}@database:3306/mediconnect?serverVersion=10.4.32-MariaDB&charset=utf8mb4
 EOF
 
 docker pull "${PREVIOUS_IMAGE}" 2>/dev/null || echo "  ⚠️  Pull impossible — utilisation du cache local."
