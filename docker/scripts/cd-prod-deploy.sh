@@ -62,6 +62,17 @@ fi
 
 # --- 1. Mise à jour de l'image dans docker-compose.yml ------------------
 echo "[1/4] Mise à jour de l'image dans docker-compose.yml..."
+
+# S'assurer que .env.local existe pour Docker Compose (requis par docker-compose.yml)
+if [ ! -f "${WORKSPACE}/.env.local" ]; then
+    echo "  ℹ️  Création de .env.local à partir de l'environnement de production existant..."
+    docker inspect "${APP_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null \
+        | grep -E '^(APP_ENV|APP_SECRET|APP_DB_PASSWORD|DATABASE_URL|MYSQL_ROOT_PASSWORD|ADMIN_EMAIL|ADMIN_PASSWORD)=' \
+        > "${WORKSPACE}/.env.local" || true
+    touch "${WORKSPACE}/.env.local"
+    echo "  ✅ Fichier .env.local configuré pour Docker Compose."
+fi
+
 # Utiliser sed pour remplacer la ligne `build: .` ou l'image existante
 # On injecte via variable d'environnement Docker Compose (APP_IMAGE)
 export APP_IMAGE="${IMAGE_REF}"

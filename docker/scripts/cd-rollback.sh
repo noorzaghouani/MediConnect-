@@ -38,6 +38,15 @@ echo ""
 
 # --- 1. Rollback de l'application ----------------------------------------
 echo "[1/3] Rollback de l'image Docker..."
+
+# S'assurer que .env.local existe pour Docker Compose
+if [ ! -f "${WORKSPACE}/.env.local" ]; then
+    docker inspect "${APP_CONTAINER}" --format '{{range .Config.Env}}{{println .}}{{end}}' 2>/dev/null \
+        | grep -E '^(APP_ENV|APP_SECRET|APP_DB_PASSWORD|DATABASE_URL|MYSQL_ROOT_PASSWORD|ADMIN_EMAIL|ADMIN_PASSWORD)=' \
+        > "${WORKSPACE}/.env.local" || true
+    touch "${WORKSPACE}/.env.local"
+fi
+
 OVERRIDE_FILE="${WORKSPACE}/docker-compose.prod-override.yml"
 cat > "${OVERRIDE_FILE}" <<EOF
 services:
