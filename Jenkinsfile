@@ -231,7 +231,7 @@ pipeline {
                       zap-baseline.py \
                       -t "http://${TARGET_HOST}:8001" \
                       -r "$WORKSPACE/zap-reports/zap-report.html" \
-                      -l HIGH \
+                      -l WARN \
                       -z "-config alert.maxInstances=10" || ZAP_EXIT=$?
                     # ZAP exit 2 = alertes WARN seulement → toléré
                     # ZAP exit 1 = alertes HIGH/CRITICAL → bloquant
@@ -272,8 +272,7 @@ pipeline {
                 withCredentials([string(credentialsId: 'ghcr-token', variable: 'GHCR_TOKEN')]) {
                     sh '''
                         echo "$GHCR_TOKEN" | docker login ghcr.io -u noorzaghouani --password-stdin
-                        IMAGE_DIGEST=$(cat /tmp/image_digest.txt)
-                        bash $WORKSPACE/docker/scripts/cd-prod-deploy.sh "${IMAGE_DIGEST}"
+                        bash $WORKSPACE/docker/scripts/cd-prod-deploy.sh "${GHCR_IMAGE}:${GIT_COMMIT}"
                     '''
                 }
             }

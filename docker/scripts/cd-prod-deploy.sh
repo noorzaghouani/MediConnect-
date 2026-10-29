@@ -27,6 +27,19 @@ if [ -z "${IMAGE_REF}" ]; then
     exit 1
 fi
 
+# Garantir que l'image a bien le préfixe complet GHCR
+if [[ "${IMAGE_REF}" != *"ghcr.io"* ]]; then
+    if [[ "${IMAGE_REF}" == *"@"* ]]; then
+        DIGEST_ONLY="${IMAGE_REF#*@}"
+        IMAGE_REF="ghcr.io/noorzaghouani/mediconnect@${DIGEST_ONLY}"
+    elif [[ "${IMAGE_REF}" == *":"* ]]; then
+        TAG_ONLY="${IMAGE_REF#*:}"
+        IMAGE_REF="ghcr.io/noorzaghouani/mediconnect:${TAG_ONLY}"
+    else
+        IMAGE_REF="ghcr.io/noorzaghouani/mediconnect:${IMAGE_REF}"
+    fi
+fi
+
 echo "============================================================"
 echo " PRODUCTION DEPLOY — Image: ${IMAGE_REF}"
 echo "============================================================"

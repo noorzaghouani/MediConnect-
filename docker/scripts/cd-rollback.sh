@@ -18,6 +18,11 @@ COMPOSE_FILE="${WORKSPACE}/docker-compose.yml"
 APP_CONTAINER="mediconnect--app-1"
 DB_CONTAINER="mediconnect--database-1"
 
+# Préfixer GHCR si nécessaire
+if [[ -n "${PREVIOUS_IMAGE}" ]] && [[ "${PREVIOUS_IMAGE}" != *"ghcr.io"* ]] && [[ "${PREVIOUS_IMAGE}" == *"@"* ]]; then
+    PREVIOUS_IMAGE="ghcr.io/noorzaghouani/mediconnect@${PREVIOUS_IMAGE#*@}"
+fi
+
 echo "============================================================"
 echo " 🔄 ROLLBACK PRODUCTION"
 echo "============================================================"
