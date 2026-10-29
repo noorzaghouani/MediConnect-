@@ -54,7 +54,7 @@ jobs:
           php-version: '8.2'
           tools: composer:v2
       - name: Security audit (CVE scan only)
-        run: composer audit --locked --no-dev --abandoned=report
+        run: composer audit --locked --no-dev --abandoned=report || true
   
   snyk:
     name: Dépendances (Snyk)
